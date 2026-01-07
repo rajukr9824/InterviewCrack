@@ -173,7 +173,7 @@ export default function Home() {
     Practice a little every day and gain confidence.
   </p>
   <Link
-    to="/daily-coding"
+    to="/coding"
     className="inline-block bg-white text-black px-6 py-3 rounded font-medium"
   >
     Start Today

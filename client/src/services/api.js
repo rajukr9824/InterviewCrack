@@ -27,3 +27,12 @@ export const generateQuiz = async (topic) => {
   const res = await api.post("/quiz/generate", { topic });
   return res.data.quiz;
 };
+export const generateCodingProblems = async (difficulty) => {
+  const res = await fetch("/api/coding/problem", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ difficulty }),
+  });
+
+  return res.json();
+};

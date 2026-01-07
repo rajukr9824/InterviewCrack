@@ -7,7 +7,7 @@ const authRoutes = require("./routes/authRoutes");
 const interviewRoutes = require("./routes/interviewRoutes");
 const learnRoute=require("./routes/learnRoute");
 const quizRoute = require("./routes/quizRoute");
-
+const codingRoutes=require("./routes/codingRoutes")
 
 dotenv.config();
 connectDB();
@@ -21,6 +21,8 @@ app.use("/api/auth", authRoutes);
 app.use("/api/interview", interviewRoutes);
 app.use("/api/learn", learnRoute);
 app.use("/api/quiz", quizRoute);
+app.use("/api/coding", codingRoutes);
+
 
 app.listen(5000, () => {
   console.log("Server running on port 5000");

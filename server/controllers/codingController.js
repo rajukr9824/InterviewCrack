@@ -2,45 +2,59 @@ const OpenAI = require("openai");
 const { GoogleGenerativeAI } = require("@google/generative-ai");
 require("dotenv").config();
 
-/* ---------- OpenAI Setup ---------- */
 const openai = new OpenAI({
   apiKey: process.env.OPENAI_API_KEY,
 });
 
-/* ---------- Gemini Setup ---------- */
 const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
 
-const generateQuiz = async (req, res) => {
+const generateCodingProblems = async (req, res) => {
   try {
-    const { topic } = req.body;
+    const { difficulty } = req.body;
 
-    if (!topic) {
-      return res.status(400).json({ message: "Topic is required" });
+    if (!difficulty) {
+      return res.status(400).json({ message: "Difficulty is required" });
     }
 
     const prompt = `
-Act as a technical interviewer.
+Act as a senior FAANG interviewer.
 
-Generate exactly 10 multiple-choice questions for ${topic}.
-Each question must have:
-- question
-- 4 options
-- correct answer index (0-based)
+Generate exactly 3 top interview coding problems from:
+${topicPart}
 
-Output MUST be raw JSON array.
+Rules:
+- Problem 1: Easy
+- Problem 2: Medium
+- Problem 3: Hard
+- Problems must be commonly asked in interviews (LeetCode-style)
+
+Each problem must include:
+- title
+- difficulty (Easy / Medium / Hard)
+- description
+- example input/output
+- constraints
+- expected approach (no code)
+
+Output MUST be a raw JSON array.
 Format:
 [
   {
-    "question": "",
-    "options": ["", "", "", ""],
-    "correct": 0
+    "title": "",
+    "difficulty": "",
+    "description": "",
+    "example": "",
+    "constraints": "",
+    "approach": "",
+    "leetcodeLink": ""
   }
 ]
 
 Do NOT include markdown or extra text.
 `;
 
-    /* ---------- TRY OPENAI FIRST ---------- */
+
+    /* ---------- OPENAI FIRST ---------- */
     try {
       const response = await openai.chat.completions.create({
         model: "gpt-4o-mini",
@@ -48,18 +62,17 @@ Do NOT include markdown or extra text.
         temperature: 0.3,
       });
 
-      const text = response.choices[0].message.content;
-      const quiz = extractJSON(text);
+      const problems = extractJSON(response.choices[0].message.content);
 
       return res.status(200).json({
-        quiz,
+        problems,
         source: "openai",
       });
     } catch (openAiError) {
       console.error("OpenAI failed, switching to Gemini...");
     }
 
-    /* ---------- FALLBACK TO GEMINI ---------- */
+    /* ---------- GEMINI FALLBACK ---------- */
     try {
       const model = genAI.getGenerativeModel({
         model: "gemini-2.5-flash",
@@ -67,43 +80,36 @@ Do NOT include markdown or extra text.
 
       const result = await model.generateContent(prompt);
       const response = await result.response;
-      const text = response.text();
 
-      const quiz = extractJSON(text);
+      const problems = extractJSON(response.text());
 
       return res.status(200).json({
-        quiz,
+        problems,
         source: "gemini",
       });
     } catch (geminiError) {
       console.error("Gemini failed:", geminiError);
     }
 
-    /* ---------- FINAL FALLBACK ---------- */
     res.status(500).json({
-      message: "Unable to generate quiz at the moment",
+      message: "Unable to generate coding problems",
       source: "fallback",
     });
   } catch (error) {
-    console.error("QUIZ ERROR:", error);
+    console.error("CODING CONTROLLER ERROR:", error);
     res.status(500).json({ message: "Internal server error" });
   }
 };
 
-/* ---------- Safe JSON Extractor ---------- */
+/* ---------- JSON Extractor ---------- */
 const extractJSON = (text) => {
   try {
     const start = text.indexOf("[");
     const end = text.lastIndexOf("]") + 1;
-
-    if (start === -1 || end === -1) {
-      throw new Error("JSON not found");
-    }
-
     return JSON.parse(text.substring(start, end));
-  } catch (error) {
+  } catch {
     throw new Error("Invalid AI response format");
   }
 };
 
-module.exports = { generateQuiz };
+module.exports = { generateCodingProblems };

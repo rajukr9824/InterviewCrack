@@ -33,7 +33,7 @@ export default function Header() {
           <Link to="/quiz" className="text-gray-700 hover:text-black">
             Quiz
           </Link>
-          <Link to="/daily-coding" className="text-gray-700 hover:text-black">
+          <Link to="/coding" className="text-gray-700 hover:text-black">
             Coding
           </Link>
           <Link to="/profile" className="text-gray-700 hover:text-black">
@@ -73,7 +73,7 @@ export default function Header() {
           </Link>
           <Link
             onClick={() => setOpen(false)}
-            to="/daily-coding"
+            to="/coding"
             className="block"
           >
             Coding
