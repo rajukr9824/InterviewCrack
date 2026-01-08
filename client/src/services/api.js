@@ -14,23 +14,23 @@ api.interceptors.request.use((config) => {
 });
 
 export const generateInterviewQuestions = async (topic, difficulty) => {
-  const res = await api.post("/interview/generate", { topic, difficulty });
+  const res = await api.post("/api/interview/generate", {
+    topic,
+    difficulty,
+  });
   return res.data.questions;
 };
+
 export const generateTopicExplanation = async (topic) => {
-  const res = await api.post("/learn/explain", { topic });
+  const res = await api.post("/api/learn/explain", { topic });
   return res.data.explanation;
 };
+
 export const generateQuiz = async (topic) => {
-  const res = await api.post("/quiz/generate", { topic });
+  const res = await api.post("/api/quiz/generate", { topic });
   return res.data.quiz;
 };
 export const generateCodingProblems = async (difficulty) => {
-  const res = await fetch("/api/coding/problem", {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ difficulty }),
-  });
-
-  return res.json();
+  const res = await api.post("/api/coding/problem", { difficulty });
+  return res.data;
 };
