@@ -47,7 +47,7 @@ Do NOT include markdown, backticks, or extra text.
         source: "openai",
       });
     } catch (openAiError) {
-      console.error("OpenAI failed, switching to Gemini...", openAiError);
+      console.error("OpenAI failed, switching to Gemini...");
     }
 
     /* ---------- FALLBACK TO GEMINI ---------- */
@@ -67,7 +67,7 @@ Do NOT include markdown, backticks, or extra text.
         source: "gemini",
       });
     } catch (geminiError) {
-      console.error("Gemini failed:", geminiError);
+      console.error("Gemini failed");
     }
 
     /* ---------- FINAL FALLBACK ---------- */

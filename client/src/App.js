@@ -11,6 +11,10 @@ import Layout from "./components/Layout";
 import InterviewPractice from "./pages/InterviewPractice";
 import Coding from "./pages/Coding";
 import CodingPractice from "./pages/CodingPractice";
+import Profile from "./pages/Profile";
+
+
+
 
 function App() {
   return (
@@ -32,6 +36,7 @@ function App() {
             <Route path="/quiz-practice" element={<QuizPractice />} />
             <Route path="/coding" element={<Coding />} />
             <Route path="/coding-practice" element={<CodingPractice />} />
+            <Route path="/profile" element={<Profile />} />
           </Route>
         </Route>
 

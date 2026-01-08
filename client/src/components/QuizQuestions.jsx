@@ -1,8 +1,12 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { useDispatch } from "react-redux";
+import { updateQuizSession } from "../services/userApi";
+import { updateStats } from "../redux/slices/authSlice";
 
 export default function QuizQuestions({ questions }) {
   const navigate = useNavigate();
+  const dispatch = useDispatch();
 
   const [currentIndex, setCurrentIndex] = useState(0);
   const [answers, setAnswers] = useState({});
@@ -77,10 +81,24 @@ export default function QuizQuestions({ questions }) {
           );
         })}
 
-        {/* Only Back Button */}
+        {/* ✅ BACK BUTTON – QUIZ SESSION UPDATED HERE */}
         <div className="flex justify-center mt-8">
           <button
-            onClick={() => navigate("/quiz")}
+            onClick={async () => {
+              try {
+                const res = await updateQuizSession();
+
+                dispatch(
+                  updateStats({
+                    quizSessions: res.data.quizSessions,
+                  })
+                );
+              } catch (error) {
+                console.error("Failed to update quiz session");
+              } finally {
+                navigate("/quiz");
+              }
+            }}
             className="bg-black text-white px-6 py-2 rounded"
           >
             Back to Quiz

@@ -1,9 +1,13 @@
 import { useLocation, useNavigate } from "react-router-dom";
 import { useState } from "react";
+import { useDispatch } from "react-redux";
+import { updateDailyCoding } from "../services/userApi";
+import { updateStats } from "../redux/slices/authSlice";
 
 export default function CodingPractice() {
   const { state } = useLocation();
   const navigate = useNavigate();
+  const dispatch = useDispatch();
 
   const { problems, topicPart } = state || {};
   const [index, setIndex] = useState(0);
@@ -14,7 +18,7 @@ export default function CodingPractice() {
     return null;
   }
 
-  // 🎉 Completion screen
+  // 🎉 COMPLETION SCREEN
   if (index >= problems.length) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gray-50">
@@ -24,7 +28,21 @@ export default function CodingPractice() {
             You’ve completed all problems for this topic.
           </p>
           <button
-            onClick={() => navigate("/coding")}
+            onClick={async () => {
+              try {
+                const res = await updateDailyCoding();
+
+                dispatch(
+                  updateStats({
+                    dailyCodingStreak: res.data.dailyCodingStreak,
+                  })
+                );
+              } catch (error) {
+                console.error("Failed to update daily coding streak");
+              } finally {
+                navigate("/coding");
+              }
+            }}
             className="w-full bg-black text-white py-3 rounded-lg font-bold"
           >
             PRACTICE AGAIN
@@ -69,8 +87,6 @@ export default function CodingPractice() {
             >
               Practice on LeetCode/GFG
             </a>
-
-           
           </div>
 
           <button

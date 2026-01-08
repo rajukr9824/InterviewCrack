@@ -1,11 +1,15 @@
 import { useLocation, useNavigate } from "react-router-dom";
 import { useState } from "react";
+import { useDispatch } from "react-redux";
+import { updateInterviewSession } from "../services/userApi";
+import { updateStats } from "../redux/slices/authSlice";
 
 export default function InterviewPractice() {
   const { state } = useLocation();
   const navigate = useNavigate();
+  const dispatch = useDispatch();
 
-  const { questions, topic } = state || {};
+  const { questions } = state || {};
 
   const [currentIndex, setCurrentIndex] = useState(0);
   const [showSolution, setShowSolution] = useState(false);
@@ -27,7 +31,21 @@ export default function InterviewPractice() {
             You've completed all questions.
           </p>
           <button
-            onClick={() => navigate("/interview")}
+            onClick={async () => {
+              try {
+                const res = await updateInterviewSession();
+
+                dispatch(
+                  updateStats({
+                    interviewSessions: res.data.interviewSessions,
+                  })
+                );
+              } catch (error) {
+                console.error("Failed to update interview session");
+              } finally {
+                navigate("/interview");
+              }
+            }}
             className="w-full bg-black text-white py-3 rounded-lg font-bold"
           >
             PRACTICE AGAIN
@@ -47,7 +65,9 @@ export default function InterviewPractice() {
         <div className="w-full bg-gray-200 h-2 rounded-full mb-8">
           <div
             className="bg-black h-2 rounded-full"
-            style={{ width: `${((currentIndex + 1) / questions.length) * 100}%` }}
+            style={{
+              width: `${((currentIndex + 1) / questions.length) * 100}%`,
+            }}
           />
         </div>
 

@@ -61,7 +61,7 @@ Rules:
         source: "gemini",
       });
     } catch (geminiError) {
-      console.error("Gemini also failed:", geminiError);
+      console.error("Gemini also failed:");
     }
 
     /* ---------- FINAL FALLBACK ---------- */

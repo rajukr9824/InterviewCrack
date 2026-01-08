@@ -1,98 +1,69 @@
 import { Link, useNavigate } from "react-router-dom";
-import { useState } from "react";
+import { useSelector, useDispatch } from "react-redux";
+import { logout } from "../redux/slices/authSlice";
 import { removeToken } from "../utils/Auth";
 
 export default function Header() {
   const navigate = useNavigate();
-  const [open, setOpen] = useState(false);
+  const dispatch = useDispatch();
+
+  const { user, isAuthenticated } = useSelector((state) => state.auth);
 
   const handleLogout = () => {
+    dispatch(logout());
     removeToken();
     navigate("/login");
   };
 
   return (
-    <header className="sticky top-0 z-50 bg-white shadow">
-      <div className="px-6 py-4 flex justify-between items-center">
-        {/* Logo */}
+    <header className="fixed top-0 left-0 w-full bg-white shadow px-6 py-4 z-50">
+      <div className="max-w-6xl mx-auto flex justify-between items-center">
         <Link to="/" className="text-xl font-bold">
           InterviewCrack
         </Link>
 
-        {/* Desktop Nav */}
-        <nav className="hidden md:flex space-x-6 items-center">
-          <Link to="/" className="text-gray-700 hover:text-black">
+        <nav className="flex items-center gap-6">
+          <Link to="/" className="text-gray-600 hover:text-black">
             Home
           </Link>
-          <Link to="/learn" className="text-gray-700 hover:text-black">
-            Learn
-          </Link>
-          <Link to="/interview" className="text-gray-700 hover:text-black">
-            Practice
-          </Link>
-          <Link to="/quiz" className="text-gray-700 hover:text-black">
-            Quiz
-          </Link>
-          <Link to="/coding" className="text-gray-700 hover:text-black">
-            Coding
-          </Link>
-          <Link to="/profile" className="text-gray-700 hover:text-black">
-            Profile
-          </Link>
-          <button
-            onClick={handleLogout}
-            className="bg-black text-white px-4 py-1 rounded"
-          >
-            Logout
-          </button>
+
+          {isAuthenticated ? (
+            <>
+              <Link
+                to="/profile"
+                className="flex items-center gap-2 hover:opacity-80"
+              >
+                <img
+                  src={
+                    user?.avatar ||
+                    `https://ui-avatars.com/api/?name=${user?.name}&background=000&color=fff`
+                  }
+                  alt="Profile"
+                  className="w-8 h-8 rounded-full object-cover border"
+                />
+
+                <span className="text-gray-700 font-medium">
+                  {user?.name}
+                </span>
+              </Link>
+
+              <button
+                onClick={handleLogout}
+                className="text-sm bg-black text-white px-4 py-2 rounded"
+              >
+                Logout
+              </button>
+            </>
+          ) : (
+            <Link
+              to="/login"
+              className="bg-black text-white px-4 py-2 rounded"
+            >
+              Login
+            </Link>
+          )}
         </nav>
-
-        {/* Mobile Menu Button */}
-        <button
-          onClick={() => setOpen(!open)}
-          className="md:hidden text-2xl"
-        >
-          ☰
-        </button>
       </div>
-
-      {/* Mobile Menu */}
-      {open && (
-        <div className="md:hidden bg-white border-t px-6 py-4 space-y-4">
-          <Link onClick={() => setOpen(false)} to="/" className="block">
-            Home
-          </Link>
-          <Link onClick={() => setOpen(false)} to="/learn" className="block">
-            Learn
-          </Link>
-          <Link onClick={() => setOpen(false)} to="/interview" className="block">
-            Practice
-          </Link>
-          <Link onClick={() => setOpen(false)} to="/quiz" className="block">
-            Quiz
-          </Link>
-          <Link
-            onClick={() => setOpen(false)}
-            to="/coding"
-            className="block"
-          >
-            Coding
-          </Link>
-          <Link onClick={() => setOpen(false)} to="/profile" className="block">
-            Profile
-          </Link>
-
-          <button
-            onClick={() => {
-              setOpen(false);
-              handleLogout();
-            }}
-            className="w-full bg-black text-white py-2 rounded"
-          >
-            Logout
-          </button>
-        </div>
-      )}
     </header>
   );
 }

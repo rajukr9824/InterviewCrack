@@ -76,7 +76,7 @@ Do NOT include markdown or extra text.
         source: "gemini",
       });
     } catch (geminiError) {
-      console.error("Gemini failed:", geminiError);
+      console.error("Gemini failed");
     }
 
     /* ---------- FINAL FALLBACK ---------- */

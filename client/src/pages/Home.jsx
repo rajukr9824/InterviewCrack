@@ -78,14 +78,49 @@ export default function Home() {
             Solve one LeetCode problem daily by topic or randomly.
           </p>
           <Link
-            to="/daily-coding"
+            to="/coding"
             className="inline-block bg-black text-white px-4 py-2 rounded"
           >
             Practice Now
           </Link>
         </div>
-
+       
       </section>
+
+      <section className="bg-white py-16 px-6">
+  <div className="max-w-5xl mx-auto text-center">
+    <h3 className="text-2xl font-bold mb-8">
+      Interview Resources
+    </h3>
+
+    <div className="grid md:grid-cols-2 gap-6">
+      <a
+        href="https://drive.google.com/drive/folders/1mjj0crODYZ1ABbk7xNdvG87EsqvQiaNV?usp=drive_link"
+        target="_blank"
+        rel="noopener noreferrer"
+        className="bg-gray-50 p-8 rounded-lg shadow hover:shadow-lg transition"
+      >
+        <h4 className="text-lg font-semibold mb-2">📂 Interview Material</h4>
+        <p className="text-gray-600 text-sm">
+          Notes, sheets, and important interview resources in one place.
+        </p>
+      </a>
+
+      <a
+        href="https://youtube.com/@rajukumar-lg7le?si=W3JgefQfim3SHn8N"
+        target="_blank"
+        rel="noopener noreferrer"
+        className="bg-gray-50 p-8 rounded-lg shadow hover:shadow-lg transition"
+      >
+        <h4 className="text-lg font-semibold mb-2">▶️ InterviewCrack YouTube</h4>
+        <p className="text-gray-600 text-sm">
+          Real interview rounds, preparation strategy, and confidence tips.
+        </p>
+      </a>
+    </div>
+  </div>
+</section>
+
 
       {/* How It Works */}
 <section className="bg-white py-16 px-6">
