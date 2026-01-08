@@ -1,10 +1,8 @@
 // client/src/services/api.js
-import axios from "axios";
+
 import { getToken } from "../utils/Auth";
 
-const api = axios.create({
-  baseURL: "http://localhost:5000/api",
-});
+
 
 // Automatically adds JWT to every request if it exists
 api.interceptors.request.use((config) => {

@@ -4,6 +4,7 @@ import { updateProfile, logout } from "../redux/slices/authSlice";
 import { removeToken } from "../utils/Auth";
 import axios from "axios";
 import { getToken } from "../utils/Auth";
+import api from "../api/axios";
 
 
 export default function Profile() {
@@ -46,15 +47,15 @@ export default function Profile() {
     try {
       const token = getToken();
 
-      const res = await axios.put(
-        "http://localhost:5000/api/user/profile",
-        { avatar: reader.result },
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        }
-      );
+      const res = await api.put(
+  "/api/user/profile",
+  { avatar: reader.result },
+  {
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
+  }
+);
 
       // Update Redux using backend response
       dispatch(updateProfile({ avatar: res.data.user.avatar }));

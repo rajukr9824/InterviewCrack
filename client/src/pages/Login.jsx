@@ -4,6 +4,8 @@ import axios from "axios";
 import { useDispatch } from "react-redux";
 import { loginSuccess } from "../redux/slices/authSlice";
 import { setToken } from "../utils/Auth";
+import api from "../api/axios";
+
 
 export default function Login() {
   const [form, setForm] = useState({ email: "", password: "" });
@@ -23,10 +25,7 @@ export default function Login() {
     setLoading(true);
 
     try {
-      const res = await axios.post(
-        "http://localhost:5000/api/auth/login",
-        form
-      );
+      const res = await api.post("/api/auth/login", form);
 
       const { token, user } = res.data;
 

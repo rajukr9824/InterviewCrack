@@ -1,7 +1,8 @@
 import { useState } from "react";
 import { useNavigate, Link } from "react-router-dom"; // Added Link
-import axios from "axios";
+
 import { setToken } from "../utils/Auth"; // Import setToken to auto-login
+import api from "../api/axios";
 
 export default function Register() {
   const [form, setForm] = useState({ name: "", email: "", password: "" });
@@ -19,10 +20,7 @@ export default function Register() {
     setLoading(true);
 
     try {
-      const res = await axios.post(
-        "http://localhost:5000/api/auth/register",
-        form
-      );
+      const res = await api.post("/api/auth/register", form);
 
       // OPTIONAL: Auto-login after registration
       if (res.data.token) {
