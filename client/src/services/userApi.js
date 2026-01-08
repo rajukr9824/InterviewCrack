@@ -1,11 +1,9 @@
-import axios from "axios";
+
+import api from "../api/axios";
 import { getToken } from "../utils/Auth";
 
-const API = axios.create({
-  baseURL: "http://localhost:5000/api/user",
-});
-
-API.interceptors.request.use((config) => {
+// Attach token (if you are not already doing this globally)
+api.interceptors.request.use((config) => {
   const token = getToken();
   if (token) {
     config.headers.Authorization = `Bearer ${token}`;
@@ -13,6 +11,11 @@ API.interceptors.request.use((config) => {
   return config;
 });
 
-export const updateDailyCoding = () => API.post("/daily-coding");
-export const updateInterviewSession = () => API.post("/interview-session");
-export const updateQuizSession = () => API.post("/quiz-session");
+export const updateDailyCoding = () =>
+  api.post("/api/user/daily-coding");
+
+export const updateInterviewSession = () =>
+  api.post("/api/user/interview-session");
+
+export const updateQuizSession = () =>
+  api.post("/api/user/quiz-session");
