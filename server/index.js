@@ -18,7 +18,7 @@ const app = express();
 
 app.use(
   cors({
-    origin: ["https://interview-crack-five.vercel.app/"],
+    origin: ["https://interview-crack-five.vercel.app/login"],
     credentials: true,
   })
 );
