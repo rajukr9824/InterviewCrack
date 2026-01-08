@@ -16,12 +16,23 @@ connectDB();
 const app = express();
 
 
+const cors = require("cors");
+
 app.use(
   cors({
-    origin: ["https://interview-crack-five.vercel.app/"],
+    origin: [
+      "http://localhost:3000",
+      "https://interview-crack-five.vercel.app",
+    ],
+    methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+    allowedHeaders: ["Content-Type", "Authorization"],
     credentials: true,
   })
 );
+
+// VERY IMPORTANT: handle preflight
+app.options("*", cors());
+
 
 
 
