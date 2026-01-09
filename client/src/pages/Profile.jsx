@@ -6,7 +6,6 @@ import axios from "axios";
 import { getToken } from "../utils/Auth";
 import api from "../api/axios";
 
-
 export default function Profile() {
   const dispatch = useDispatch();
   const { user } = useSelector((state) => state.auth);
@@ -38,37 +37,34 @@ export default function Profile() {
   };
 
   const handleAvatarChange = async (e) => {
-  const file = e.target.files[0];
-  if (!file) return;
+    const file = e.target.files[0];
+    if (!file) return;
 
-  const reader = new FileReader();
+    const reader = new FileReader();
 
-  reader.onloadend = async () => {
-    try {
-      const token = getToken();
+    reader.onloadend = async () => {
+      try {
+        const token = getToken();
 
-      const res = await api.put(
-  "/api/user/profile",
-  { avatar: reader.result },
-  {
-    headers: {
-      Authorization: `Bearer ${token}`,
-    },
-  }
-);
+        const res = await api.put(
+          "/api/user/profile",
+          { avatar: reader.result },
+          {
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+          }
+        );
 
-      // Update Redux using backend response
-      dispatch(updateProfile({ avatar: res.data.user.avatar }));
-      setAvatarPreview(res.data.user.avatar);
-    } catch (error) {
-      console.error(error);
-      alert("Failed to update profile picture");
-    }
+        dispatch(updateProfile({ avatar: res.data.user.avatar }));
+        setAvatarPreview(res.data.user.avatar);
+      } catch (error) {
+        alert("Failed to update profile picture");
+      }
+    };
+
+    reader.readAsDataURL(file);
   };
-
-  reader.readAsDataURL(file);
-};
-
 
   const handleUpdate = (e) => {
     e.preventDefault();
@@ -104,29 +100,28 @@ export default function Profile() {
 
   const stats = user.stats || {};
 
- const formatCount = (count, singular, plural) => {
-  const value = count ?? 0;
-  return `${value} ${value > 1 ? plural : singular}`;
-};
-
+  const formatCount = (count, singular, plural) => {
+    const value = count ?? 0;
+    return `${value} ${value > 1 ? plural : singular}`;
+  };
 
   return (
-    <div className="bg-gray-50 px-6 py-10">
+    <div className="bg-gray-50 px-4 sm:px-6 py-10">
       <div className="max-w-5xl mx-auto space-y-8">
 
         {/* Profile Header */}
-        <div className="bg-white p-6 rounded-lg shadow flex items-center gap-6">
+        <div className="bg-white p-4 sm:p-6 rounded-lg shadow flex flex-col sm:flex-row items-center gap-6">
           <div className="text-center">
             <img
-  src={
-    avatarPreview ||
-    `https://ui-avatars.com/api/?name=${encodeURIComponent(
-      user?.name || "User"
-    )}&background=000&color=fff`
-  }
-  alt="Profile"
-  className="w-24 h-24 rounded-full object-cover border"
-/>
+              src={
+                avatarPreview ||
+                `https://ui-avatars.com/api/?name=${encodeURIComponent(
+                  user?.name || "User"
+                )}&background=000&color=fff`
+              }
+              alt="Profile"
+              className="w-20 h-20 sm:w-24 sm:h-24 rounded-full object-cover border mx-auto"
+            />
 
             <label className="block mt-2 text-sm cursor-pointer font-medium text-black">
               Change Photo
@@ -139,15 +134,15 @@ export default function Profile() {
             </label>
           </div>
 
-          <div className="flex-1 flex justify-between items-center">
+          <div className="flex-1 flex flex-col sm:flex-row justify-between items-center gap-4 text-center sm:text-left">
             <div>
-              <h2 className="text-xl font-bold">{user.name}</h2>
+              <h2 className="text-lg sm:text-xl font-bold">{user.name}</h2>
               <p className="text-gray-600 text-sm">{user.email}</p>
             </div>
 
             <button
               onClick={() => setIsEditing(true)}
-              className="bg-black text-white px-4 py-2 rounded"
+              className="bg-black text-white px-4 py-2 rounded w-full sm:w-auto"
             >
               Edit Profile
             </button>
@@ -155,7 +150,7 @@ export default function Profile() {
         </div>
 
         {/* Activity Section */}
-        <div className="grid md:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
           <ActivityCard
             title="Interview Practice"
             value={formatCount(stats.interviewSessions, "Session", "Sessions")}
@@ -170,17 +165,15 @@ export default function Profile() {
           />
         </div>
 
-       
-
         {/* Danger Zone */}
-        <div className="bg-white p-6 rounded-lg shadow border border-red-200">
+        <div className="bg-white p-4 sm:p-6 rounded-lg shadow border border-red-200">
           <h3 className="font-semibold text-red-600 mb-2">Danger Zone</h3>
           <p className="text-sm text-gray-600 mb-4">
             Deleting your account is permanent and cannot be undone.
           </p>
           <button
             onClick={() => setShowDeleteConfirm(true)}
-            className="bg-red-600 text-white px-4 py-2 rounded"
+            className="bg-red-600 text-white px-4 py-2 rounded w-full sm:w-auto"
           >
             Delete Account
           </button>
@@ -188,7 +181,7 @@ export default function Profile() {
 
         {/* Edit Profile Modal */}
         {isEditing && (
-          <div className="fixed inset-0 bg-black bg-opacity-40 flex items-center justify-center">
+          <div className="fixed inset-0 bg-black bg-opacity-40 flex items-center justify-center px-4">
             <div className="bg-white p-6 rounded-lg w-full max-w-md">
               <h3 className="font-semibold mb-4">Update Profile</h3>
 
@@ -231,7 +224,7 @@ export default function Profile() {
 
         {/* Delete Confirmation Modal */}
         {showDeleteConfirm && (
-          <div className="fixed inset-0 bg-black bg-opacity-40 flex items-center justify-center">
+          <div className="fixed inset-0 bg-black bg-opacity-40 flex items-center justify-center px-4">
             <div className="bg-white p-6 rounded-lg w-full max-w-md">
               <h3 className="font-semibold mb-4 text-red-600">
                 Confirm Delete Account
@@ -265,7 +258,7 @@ export default function Profile() {
 
 function ActivityCard({ title, value }) {
   return (
-    <div className="bg-white p-6 rounded-lg shadow text-center">
+    <div className="bg-white p-4 sm:p-6 rounded-lg shadow text-center">
       <h4 className="font-semibold mb-2">{title}</h4>
       <p className="text-gray-600 text-sm">{value}</p>
     </div>
