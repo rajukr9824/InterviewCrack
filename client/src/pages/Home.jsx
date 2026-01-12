@@ -12,6 +12,63 @@ export default function Home() {
         <h2 className="text-3xl font-bold mb-4">
           Welcome Back 👋
         </h2>
+        {/* Weekly Study Routine */}
+<section className="bg-white py-14 px-6">
+  <div className="max-w-6xl mx-auto">
+    <h3 className="text-2xl font-bold text-center mb-10">
+      📅 Weekly Interview Preparation Routine
+    </h3>
+
+    <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
+      {/* Monday */}
+      <div className="border rounded-lg p-5">
+        <h4 className="font-semibold mb-2">Monday</h4>
+        <p className="text-sm">📘 Arrays + Binary Search + Greedy</p>
+        <p className="text-sm text-gray-600">🧠 OOPs</p>
+      </div>
+
+      {/* Tuesday */}
+      <div className="border rounded-lg p-5">
+        <h4 className="font-semibold mb-2">Tuesday</h4>
+        <p className="text-sm">
+          📘 Strings + Sliding Window + LL + Stack + Queue
+        </p>
+        <p className="text-sm text-gray-600">🧠 Operating System</p>
+      </div>
+
+      {/* Wednesday */}
+      <div className="border rounded-lg p-5">
+        <h4 className="font-semibold mb-2">Wednesday</h4>
+        <p className="text-sm">📘 Trees</p>
+        <p className="text-sm text-gray-600">🧠 DBMS</p>
+      </div>
+
+      {/* Thursday */}
+      <div className="border rounded-lg p-5">
+        <h4 className="font-semibold mb-2">Thursday</h4>
+        <p className="text-sm">📘 Graphs</p>
+        <p className="text-sm text-gray-600">🧠 Computer Networks</p>
+      </div>
+
+      {/* Friday */}
+      <div className="border rounded-lg p-5">
+        <h4 className="font-semibold mb-2">Friday</h4>
+        <p className="text-sm">📘 DP + Recursion + Backtracking</p>
+        <p className="text-sm text-gray-600">⚛️ MERN Stack Revision</p>
+      </div>
+
+      {/* Weekend */}
+      <div className="border rounded-lg p-5 bg-gray-50">
+        <h4 className="font-semibold mb-2">Saturday & Sunday</h4>
+        <p className="text-sm">🚀 Project Development</p>
+        <p className="text-sm text-gray-600">
+          Features • Bug Fixes • Resume • Mock Interviews
+        </p>
+      </div>
+    </div>
+  </div>
+</section>
+
         <p className="text-gray-600">
           Choose how you want to prepare for today’s interview practice.
         </p>
