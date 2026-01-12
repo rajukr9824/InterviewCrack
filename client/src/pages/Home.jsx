@@ -54,7 +54,7 @@ export default function Home() {
       <div className="border rounded-lg p-5">
         <h4 className="font-semibold mb-2">Friday</h4>
         <p className="text-sm">📘 DP + Recursion + Backtracking</p>
-        <p className="text-sm text-gray-600">⚛️ MERN Stack Revision</p>
+        <p className="text-sm text-gray-600">⚛️ MERN Stack + Javascript Revision</p>
       </div>
 
       {/* Weekend */}
@@ -62,7 +62,7 @@ export default function Home() {
         <h4 className="font-semibold mb-2">Saturday & Sunday</h4>
         <p className="text-sm">🚀 Project Development</p>
         <p className="text-sm text-gray-600">
-          Features • Bug Fixes • Resume • Mock Interviews
+           • Projects • Resume • Mock Interviews
         </p>
       </div>
     </div>
