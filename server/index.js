@@ -7,7 +7,6 @@ const authRoutes = require("./routes/authRoutes");
 const interviewRoutes = require("./routes/interviewRoutes");
 const learnRoute=require("./routes/learnRoute");
 const quizRoute = require("./routes/quizRoute");
-const codingRoutes=require("./routes/codingRoutes")
 const userRoutes=require("./routes/userRoutes")
 
 dotenv.config();
@@ -43,7 +42,6 @@ app.use("/api/auth", authRoutes);
 app.use("/api/interview", interviewRoutes);
 app.use("/api/learn", learnRoute);
 app.use("/api/quiz", quizRoute);
-app.use("/api/coding", codingRoutes);
 app.use("/api/user", require("./routes/userRoutes"));
 
 

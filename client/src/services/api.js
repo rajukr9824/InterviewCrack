@@ -30,7 +30,4 @@ export const generateQuiz = async (topic) => {
   const res = await api.post("/api/quiz/generate", { topic });
   return res.data.quiz;
 };
-export const generateCodingProblems = async (difficulty) => {
-  const res = await api.post("/api/coding/problem", { difficulty });
-  return res.data;
-};
+
