@@ -87,6 +87,7 @@ export default function Home() {
           <p className="text-gray-600 text-sm mb-4">
             Revise important concepts with short explanations and more details.
           </p>
+          
           <Link
             to="/learn"
             className="inline-block bg-black text-white px-4 py-2 rounded"

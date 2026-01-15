@@ -62,6 +62,8 @@ export default function Interview() {
           <option>DSA</option>
           <option>Javascript</option>
           <option>MERN Stack</option>
+          <option>HR</option>
+          <option>Mock Interview</option>
         </select>
 
         <label className="block text-sm font-medium mb-1">
