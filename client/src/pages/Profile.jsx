@@ -4,6 +4,8 @@ import { updateProfile, logout } from "../redux/slices/authSlice";
 import { removeToken, getToken } from "../utils/Auth";
 import axios from "axios";
 import api from "../api/axios";
+import { useNavigate } from "react-router-dom";
+
 
 import {
   getMyInterviewExperiences,
@@ -13,6 +15,8 @@ import {
 
 export default function Profile() {
   const dispatch = useDispatch();
+  const navigate = useNavigate();
+
   const { user } = useSelector((state) => state.auth);
 
   const [isEditing, setIsEditing] = useState(false);
@@ -24,6 +28,11 @@ export default function Profile() {
   // 🔹 Interview experience states
   const [myExperiences, setMyExperiences] = useState([]);
   const [editingExp, setEditingExp] = useState(null);
+
+const [showExperiences, setShowExperiences] = useState(false);
+const ITEMS_PER_PAGE = 3;
+const [currentPage, setCurrentPage] = useState(1);
+
 
   /* ---------------- Profile Data ---------------- */
   useEffect(() => {
@@ -110,6 +119,13 @@ export default function Profile() {
     const v = count ?? 0;
     return `${v} ${v > 1 ? p : s}`;
   };
+  const totalPages = Math.ceil(myExperiences.length / ITEMS_PER_PAGE);
+
+const paginatedExperiences = myExperiences.slice(
+  (currentPage - 1) * ITEMS_PER_PAGE,
+  currentPage * ITEMS_PER_PAGE
+);
+
 
   return (
     <div className="bg-gray-50 px-4 sm:px-6 py-10">
@@ -155,48 +171,122 @@ export default function Profile() {
           <ActivityCard title="Daily Coding Streak" value={formatCount(stats.dailyCodingStreak, "Day", "Days")} />
         </div>
 
+        {/*==============HEADING AND SHOW BUTTON=======*/}
+
+       <div className="flex items-center gap-3 flex-wrap">
+  <h3 className="font-semibold">My Interview Experiences</h3>
+
+  {/* Show / Hide */}
+  <button
+    onClick={() => {
+      setShowExperiences(!showExperiences);
+      setCurrentPage(1);
+    }}
+    className={`text-xs px-3 py-1 rounded transition
+      ${
+        showExperiences
+          ? "border border-gray-400 text-gray-700"
+          : "bg-black text-white hover:bg-gray-900"
+      }`}
+  >
+    {showExperiences ? "Hide" : "Show"}
+  </button>
+
+  {/* Add Experience */}
+  <button
+    onClick={() => navigate("/interview-experiences")}
+    className="text-xs px-3 py-1 rounded border border-black text-black hover:bg-black hover:text-white transition"
+  >
+    + Add Experience
+  </button>
+</div>
+
+
+
+
+
         {/* ================= MY INTERVIEW EXPERIENCES ================= */}
-        <div className="bg-white p-4 sm:p-6 rounded-lg shadow">
-          <h3 className="font-semibold mb-4">My Interview Experiences</h3>
+        {showExperiences && (
+  <div className="bg-white p-4 sm:p-6 rounded-lg shadow mt-4">
 
-          {myExperiences.length === 0 && (
-            <p className="text-gray-500 text-sm">
-              You have not added any interview experiences yet.
-            </p>
-          )}
+    {myExperiences.length === 0 ? (
+      <p className="text-gray-500 text-sm">
+        You have not added any interview experiences yet.
+      </p>
+    ) : (
+      <>
+        <div className="space-y-4">
+          {paginatedExperiences.map((exp) => (
+            <div key={exp._id} className="border p-4 rounded">
+              <h4 className="font-medium">
+                {exp.companyName} – {exp.role}
+              </h4>
 
-          <div className="space-y-4">
-            {myExperiences.map((exp) => (
-              <div key={exp._id} className="border p-4 rounded">
-                <h4 className="font-medium">
-                  {exp.companyName} – {exp.role}
-                </h4>
-                <p className="text-sm text-gray-600 mb-2">{exp.rounds}</p>
-                <p className="text-sm text-gray-700">{exp.description}</p>
+              <p className="text-sm text-gray-600 mb-2">{exp.rounds}</p>
+              <p className="text-sm text-gray-700">{exp.description}</p>
 
-                <div className="flex gap-3 mt-3">
-                  <button
-                    onClick={() => setEditingExp(exp)}
-                    className="px-3 py-1 border rounded text-sm"
-                  >
-                    Edit
-                  </button>
-                  <button
-                    onClick={async () => {
-                      await deleteInterviewExperience(exp._id);
-                      setMyExperiences(
-                        myExperiences.filter((e) => e._id !== exp._id)
-                      );
-                    }}
-                    className="px-3 py-1 border border-red-500 text-red-600 rounded text-sm"
-                  >
-                    Delete
-                  </button>
-                </div>
+              <div className="flex gap-3 mt-3">
+                <button
+                  onClick={() => setEditingExp(exp)}
+                  className="px-3 py-1 border rounded text-sm"
+                >
+                  Edit
+                </button>
+
+                <button
+                  onClick={async () => {
+                    await deleteInterviewExperience(exp._id);
+                    setMyExperiences(
+                      myExperiences.filter((e) => e._id !== exp._id)
+                    );
+                  }}
+                  className="px-3 py-1 border border-red-500 text-red-600 rounded text-sm"
+                >
+                  Delete
+                </button>
               </div>
-            ))}
-          </div>
+            </div>
+          ))}
         </div>
+
+        {/* Pagination Controls */}
+        {totalPages > 1 && (
+          <div className="flex justify-between items-center mt-4">
+            <button
+              disabled={currentPage === 1}
+              onClick={() => setCurrentPage((p) => p - 1)}
+              className={`px-3 py-1 border rounded text-sm
+                ${
+                  currentPage === 1
+                    ? "opacity-50 cursor-not-allowed"
+                    : "hover:bg-gray-100"
+                }`}
+            >
+              Previous
+            </button>
+
+            <span className="text-sm text-gray-600">
+              Page {currentPage} of {totalPages}
+            </span>
+
+            <button
+              disabled={currentPage === totalPages}
+              onClick={() => setCurrentPage((p) => p + 1)}
+              className={`px-3 py-1 border rounded text-sm
+                ${
+                  currentPage === totalPages
+                    ? "opacity-50 cursor-not-allowed"
+                    : "hover:bg-gray-100"
+                }`}
+            >
+              Next
+            </button>
+          </div>
+        )}
+      </>
+    )}
+  </div>
+)}
 
         {/* ================= DANGER ZONE ================= */}
         <div className="bg-white p-4 sm:p-6 rounded-lg shadow border border-red-200">
