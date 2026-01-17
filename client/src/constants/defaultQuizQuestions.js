@@ -1,5 +1,5 @@
 export const DEFAULT_QUIZ_QUESTIONS = {
-  OOPs: [
+  OOPS: [
     {
       question: "Which OOP principle supports code reusability?",
       options: ["Encapsulation", "Inheritance", "Abstraction", "Polymorphism"],
@@ -529,4 +529,309 @@ export const DEFAULT_QUIZ_QUESTIONS = {
       correct: 0,
     },
   ],
+  Python: [
+  {
+    question: "What is Python?",
+    options: [
+      "High-level programming language",
+      "Markup language",
+      "Database",
+      "Compiler",
+    ],
+    correct: 0,
+  },
+  {
+    question: "Which keyword is used to define a function?",
+    options: ["func", "define", "def", "function"],
+    correct: 2,
+  },
+  {
+    question: "Which data type is immutable?",
+    options: ["List", "Dictionary", "Set", "Tuple"],
+    correct: 3,
+  },
+  {
+    question: "What does PEP stand for?",
+    options: [
+      "Python Execution Program",
+      "Python Enhancement Proposal",
+      "Program Error Process",
+      "Python Easy Practice",
+    ],
+    correct: 1,
+  },
+  {
+    question: "Which keyword is used for inheritance?",
+    options: ["extends", "inherits", "super", "class"],
+    correct: 3,
+  },
+  {
+    question: "What is used to handle exceptions?",
+    options: ["if-else", "try-except", "loop", "error"],
+    correct: 1,
+  },
+  {
+    question: "Which library is used for arrays?",
+    options: ["Pandas", "NumPy", "Matplotlib", "Seaborn"],
+    correct: 1,
+  },
+  {
+    question: "Which symbol is used for comments?",
+    options: ["//", "#", "/* */", "<!-- -->"],
+    correct: 1,
+  },
+  {
+    question: "What is list comprehension?",
+    options: [
+      "Short syntax for lists",
+      "Sorting method",
+      "Loop",
+      "Iterator",
+    ],
+    correct: 0,
+  },
+  {
+    question: "What does len() do?",
+    options: [
+      "Returns length",
+      "Sorts list",
+      "Deletes element",
+      "Adds element",
+    ],
+    correct: 0,
+  },
+],
+Java: [
+  {
+    question: "What is Java?",
+    options: [
+      "Object-oriented language",
+      "Markup language",
+      "Database",
+      "Script only",
+    ],
+    correct: 0,
+  },
+  {
+    question: "Which keyword is used to inherit a class?",
+    options: ["this", "extends", "implements", "super"],
+    correct: 1,
+  },
+  {
+    question: "Which method is entry point of Java program?",
+    options: ["start()", "run()", "main()", "init()"],
+    correct: 2,
+  },
+  {
+    question: "What is JVM?",
+    options: [
+      "Java Variable Manager",
+      "Java Virtual Machine",
+      "Java Visual Model",
+      "Java Version Manager",
+    ],
+    correct: 1,
+  },
+  {
+    question: "Which is not OOP concept?",
+    options: ["Encapsulation", "Polymorphism", "Inheritance", "Compilation"],
+    correct: 3,
+  },
+  {
+    question: "Which access modifier is most restrictive?",
+    options: ["public", "protected", "default", "private"],
+    correct: 3,
+  },
+  {
+    question: "Which keyword creates object?",
+    options: ["class", "new", "object", "this"],
+    correct: 1,
+  },
+  {
+    question: "What is method overloading?",
+    options: [
+      "Same method name, different parameters",
+      "Same return type",
+      "Runtime binding",
+      "Inheritance",
+    ],
+    correct: 0,
+  },
+  {
+    question: "Which collection allows duplicates?",
+    options: ["Set", "Map", "List", "None"],
+    correct: 2,
+  },
+  {
+    question: "What is exception?",
+    options: [
+      "Compile-time error",
+      "Runtime error",
+      "Syntax error",
+      "Warning",
+    ],
+    correct: 1,
+  },
+],
+"MERN Stack": [
+  {
+    question: "MERN stands for?",
+    options: [
+      "MongoDB, Express, React, Node",
+      "MySQL, Express, React, Node",
+      "MongoDB, Event, React, Node",
+      "MongoDB, Express, Redux, Node",
+    ],
+    correct: 0,
+  },
+  {
+    question: "Which is frontend library?",
+    options: ["Node.js", "MongoDB", "React", "Express"],
+    correct: 2,
+  },
+  {
+    question: "Which database is used in MERN?",
+    options: ["MySQL", "PostgreSQL", "MongoDB", "SQLite"],
+    correct: 2,
+  },
+  {
+    question: "What is Express?",
+    options: [
+      "Database",
+      "Frontend framework",
+      "Backend framework",
+      "Compiler",
+    ],
+    correct: 2,
+  },
+  {
+    question: "What is Node.js?",
+    options: [
+      "Browser",
+      "JS runtime",
+      "Library",
+      "Database",
+    ],
+    correct: 1,
+  },
+  {
+    question: "What does REST API use?",
+    options: ["TCP", "HTTP", "FTP", "SMTP"],
+    correct: 1,
+  },
+  {
+    question: "Which is used for authentication?",
+    options: ["JWT", "HTML", "CSS", "DOM"],
+    correct: 0,
+  },
+  {
+    question: "Which hook manages state?",
+    options: ["useRef", "useEffect", "useState", "useMemo"],
+    correct: 2,
+  },
+  {
+    question: "Which HTTP method updates data?",
+    options: ["GET", "POST", "PUT", "DELETE"],
+    correct: 2,
+  },
+  {
+    question: "What is middleware?",
+    options: [
+      "UI layer",
+      "Function between req & res",
+      "Database",
+      "Frontend logic",
+    ],
+    correct: 1,
+  },
+],
+"AI/ML": [
+  {
+    question: "What is Artificial Intelligence?",
+    options: [
+      "Human intelligence",
+      "Machine mimicking human intelligence",
+      "Hardware",
+      "Database",
+    ],
+    correct: 1,
+  },
+  {
+    question: "What is Machine Learning?",
+    options: [
+      "Rule-based programming",
+      "Learning from data",
+      "Manual coding",
+      "Automation only",
+    ],
+    correct: 1,
+  },
+  {
+    question: "Which is supervised learning?",
+    options: ["Clustering", "Regression", "PCA", "Association"],
+    correct: 1,
+  },
+  {
+    question: "What is overfitting?",
+    options: [
+      "Good accuracy",
+      "Poor training",
+      "Model fits noise",
+      "Under training",
+    ],
+    correct: 2,
+  },
+  {
+    question: "Which algorithm is used for classification?",
+    options: [
+      "Linear Regression",
+      "K-Means",
+      "Logistic Regression",
+      "PCA",
+    ],
+    correct: 2,
+  },
+  {
+    question: "What is feature?",
+    options: [
+      "Input variable",
+      "Output variable",
+      "Error",
+      "Algorithm",
+    ],
+    correct: 0,
+  },
+  {
+    question: "Which library is used for ML?",
+    options: ["React", "Flask", "Scikit-learn", "Bootstrap"],
+    correct: 2,
+  },
+  {
+    question: "What is train-test split?",
+    options: [
+      "Model deployment",
+      "Data division",
+      "Feature scaling",
+      "Optimization",
+    ],
+    correct: 1,
+  },
+  {
+    question: "What is deep learning?",
+    options: [
+      "Rule-based system",
+      "Subset of ML using neural networks",
+      "Statistics only",
+      "Database technique",
+    ],
+    correct: 1,
+  },
+  {
+    question: "Which is activation function?",
+    options: ["ReLU", "Mean", "Variance", "Gradient"],
+    correct: 0,
+  },
+]
+
+
 };

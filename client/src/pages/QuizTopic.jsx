@@ -2,16 +2,15 @@ import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 
 const TOPICS = [
-  "OOPs",
+  "OOPS",
   "Operating System",
   "DBMS",
   "Computer Networks",
   "Data Structures & Algorithms",
   "React",
   "JavaScript",
-  "Python",
   "Java",
-  "MERN stack",
+  "MERN Stack",
   "Python",
   "AI/ML"
 ];

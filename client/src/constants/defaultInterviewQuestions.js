@@ -369,4 +369,163 @@ export const DEFAULT_INTERVIEW_QUESTIONS = {
         "Using JWT, hashing passwords, and validation.",
     },
   ],
+  HR: [
+  {
+    question: "Tell me about yourself.",
+    solution:
+      "Briefly explain your background, skills, and career goals.",
+  },
+  {
+    question: "What are your strengths?",
+    solution:
+      "Mention strengths relevant to the job with examples.",
+  },
+  {
+    question: "What are your weaknesses?",
+    solution:
+      "Share a real weakness and how you are improving it.",
+  },
+  {
+    question: "Why should we hire you?",
+    solution:
+      "Explain how your skills and attitude match the role.",
+  },
+  {
+    question: "Where do you see yourself in 5 years?",
+    solution:
+      "Describe realistic career growth aligned with the company.",
+  },
+  {
+    question: "How do you handle pressure?",
+    solution:
+      "By prioritizing tasks and staying calm under deadlines.",
+  },
+  {
+    question: "Why do you want to join our company?",
+    solution:
+      "Because of growth opportunities and company values.",
+  },
+  {
+    question: "Describe a challenge you faced.",
+    solution:
+      "Explain a problem and how you solved it positively.",
+  },
+  {
+    question: "Are you open to relocation?",
+    solution:
+      "Answer honestly based on your situation.",
+  },
+  {
+    question: "Do you have any questions for us?",
+    solution:
+      "Ask about role expectations or growth opportunities.",
+  },
+],
+"Mock Interview": [
+  {
+    question: "Explain your final year project.",
+    solution:
+      "Describe the problem, solution, tech stack, and impact.",
+  },
+  {
+    question: "What is your strongest technical skill?",
+    solution:
+      "Mention a skill you are confident in with examples.",
+  },
+  {
+    question: "Explain a difficult bug you fixed.",
+    solution:
+      "Describe the issue, debugging steps, and resolution.",
+  },
+  {
+    question: "What is REST API?",
+    solution:
+      "An API that follows REST principles using HTTP methods.",
+  },
+  {
+    question: "How do you manage deadlines?",
+    solution:
+      "By planning tasks and tracking progress regularly.",
+  },
+  {
+    question: "Explain OOP concepts.",
+    solution:
+      "Encapsulation, inheritance, polymorphism, abstraction.",
+  },
+  {
+    question: "How do you handle failure?",
+    solution:
+      "By learning from mistakes and improving continuously.",
+  },
+  {
+    question: "What happens when you type a URL in browser?",
+    solution:
+      "DNS lookup, server request, response, rendering.",
+  },
+  {
+    question: "Why should we select you over others?",
+    solution:
+      "Strong fundamentals, learning mindset, and consistency.",
+  },
+  {
+    question: "Are you comfortable working in a team?",
+    solution:
+      "Yes, I communicate clearly and collaborate effectively.",
+  },
+],
+"Python and AI/ML": [
+  {
+    question: "What is Python?",
+    solution:
+      "A high-level programming language used for automation and ML.",
+  },
+  {
+    question: "Why is Python popular in AI/ML?",
+    solution:
+      "Simple syntax and strong library support.",
+  },
+  {
+    question: "What is NumPy?",
+    solution:
+      "A library for numerical computing in Python.",
+  },
+  {
+    question: "What is Pandas?",
+    solution:
+      "Used for data manipulation and analysis.",
+  },
+  {
+    question: "What is Machine Learning?",
+    solution:
+      "Teaching machines to learn from data.",
+  },
+  {
+    question: "Difference between supervised and unsupervised learning?",
+    solution:
+      "Supervised uses labeled data, unsupervised does not.",
+  },
+  {
+    question: "What is overfitting?",
+    solution:
+      "Model performs well on training but poorly on new data.",
+  },
+  {
+    question: "What is a feature?",
+    solution:
+      "An input variable used for prediction.",
+  },
+  {
+    question: "What is train-test split?",
+    solution:
+      "Dividing data for training and evaluation.",
+  },
+  {
+    question: "What is deep learning?",
+    solution:
+      "A subset of ML using neural networks.",
+  },
+],
+
+
+
 };

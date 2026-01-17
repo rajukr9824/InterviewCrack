@@ -60,7 +60,7 @@ export default function Interview() {
           <option>DBMS</option>
           <option>Computer Network</option>
           <option>DSA</option>
-          <option>Javascript</option>
+          <option>JavaScript</option>
           <option>MERN Stack</option>
           <option>HR</option>
           <option>Mock Interview</option>
