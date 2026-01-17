@@ -11,7 +11,9 @@ const TOPICS = [
   "JavaScript",
   "Python",
   "Java",
-  "MERN stack"
+  "MERN stack",
+  "Python",
+  "AI/ML"
 ];
 
 export default function QuizTopic() {

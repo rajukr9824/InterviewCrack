@@ -64,6 +64,8 @@ export default function Interview() {
           <option>MERN Stack</option>
           <option>HR</option>
           <option>Mock Interview</option>
+          <option>Python and AI/ML</option>
+          
         </select>
 
         <label className="block text-sm font-medium mb-1">
