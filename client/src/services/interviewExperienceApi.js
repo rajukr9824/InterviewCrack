@@ -13,7 +13,7 @@ export const addInterviewExperience = (data) =>
   api.post("/api/interview-experience", data);
 
 export const getMyInterviewExperiences = () =>
-  api.get("/api/interview-experience/my");
+  api.get("/api/interview-experiences/my");
 
 export const updateInterviewExperience = (id, data) =>
   api.put(`/api/interview-experience/${id}`, data);
