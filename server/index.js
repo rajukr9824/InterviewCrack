@@ -9,6 +9,11 @@ const learnRoute=require("./routes/learnRoute");
 const quizRoute = require("./routes/quizRoute");
 const userRoutes=require("./routes/userRoutes")
 
+const interviewExperienceRoutes = require("./routes/interviewExperienceRoutes");
+
+
+
+
 dotenv.config();
 connectDB();
 
@@ -43,6 +48,8 @@ app.use("/api/interview", interviewRoutes);
 app.use("/api/learn", learnRoute);
 app.use("/api/quiz", quizRoute);
 app.use("/api/user", require("./routes/userRoutes"));
+app.use("/api/interview-experience", interviewExperienceRoutes);
+
 
 
 const PORT = process.env.PORT || 5000;

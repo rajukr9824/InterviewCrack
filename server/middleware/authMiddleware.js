@@ -9,13 +9,15 @@ const protect = (req, res, next) => {
 
   try {
     const token = authHeader.split(" ")[1];
-
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
 
-    // attach user id to request
+    // ✅ KEEP existing behavior
     req.user = {
       id: decoded.id,
     };
+
+    // ✅ ADD this (for new features)
+    req.userId = decoded.id;
 
     next();
   } catch (error) {

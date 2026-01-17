@@ -1,17 +1,5 @@
 // client/src/services/api.js
 import api from "../api/axios";
-import { getToken } from "../utils/Auth";
-
-
-
-// Automatically adds JWT to every request if it exists
-api.interceptors.request.use((config) => {
-  const token = getToken();
-  if (token) {
-    config.headers.Authorization = `Bearer ${token}`;
-  }
-  return config;
-});
 
 export const generateInterviewQuestions = async (topic, difficulty) => {
   const res = await api.post("/api/interview/generate", {

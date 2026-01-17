@@ -9,6 +9,9 @@ const TOPICS = [
   "Data Structures & Algorithms",
   "React",
   "JavaScript",
+  "Python",
+  "Java",
+  "MERN stack"
 ];
 
 export default function QuizTopic() {

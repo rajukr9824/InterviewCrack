@@ -30,6 +30,14 @@ export default function Header() {
             Home
           </Link>
 
+          {/* 🔥 NEW: Public Interview Experiences */}
+          <Link
+            to="/interview-experiences"
+            className="text-gray-600 hover:text-black text-sm sm:text-base"
+          >
+            Interview Experiences
+          </Link>
+
           {isAuthenticated ? (
             <>
               <Link

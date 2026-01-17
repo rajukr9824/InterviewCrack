@@ -3,7 +3,6 @@ import { useLocation, useNavigate } from "react-router-dom";
 import { generateQuiz } from "../services/api";
 import QuizQuestions from "../components/QuizQuestions";
 import AIError from "../components/AiError";
-import { handleAIError } from "../utils/aiError";
 import { DEFAULT_QUIZ_QUESTIONS } from "../constants/defaultQuizQuestions";
 
 export default function QuizPractice() {
@@ -13,7 +12,6 @@ export default function QuizPractice() {
 
   const [questions, setQuestions] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState("");
   const [isFallback, setIsFallback] = useState(false);
 
   useEffect(() => {
@@ -27,8 +25,7 @@ export default function QuizPractice() {
         const quiz = await generateQuiz(topic);
         setQuestions(quiz);
       } catch (err) {
-        // ✅ AI failed → use fallback
-        setError(handleAIError(err));
+        // ✅ AI failed → use fallback questions
         setQuestions(DEFAULT_QUIZ_QUESTIONS[topic] || []);
         setIsFallback(true);
       } finally {
