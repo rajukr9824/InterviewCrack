@@ -48,7 +48,7 @@ app.use("/api/interview", interviewRoutes);
 app.use("/api/learn", learnRoute);
 app.use("/api/quiz", quizRoute);
 app.use("/api/user", require("./routes/userRoutes"));
-app.use("/api/interview-experience", interviewExperienceRoutes);
+app.use("/api/interview-experiences", interviewExperienceRoutes);
 
 
 

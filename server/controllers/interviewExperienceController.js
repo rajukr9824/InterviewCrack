@@ -25,23 +25,38 @@ const addInterviewExperience = async (req, res) => {
 };
 
 // Get all / filter by company
+// Get all / filter by company (WITH PAGINATION)
 const getInterviewExperiences = async (req, res) => {
   try {
     const { company } = req.query;
+
+    const page = Number(req.query.page) || 1;
+    const limit = Number(req.query.limit) || 5;
+    const skip = (page - 1) * limit;
 
     const filter = company
       ? { companyName: { $regex: company, $options: "i" } }
       : {};
 
+    const totalItems = await InterviewExperience.countDocuments(filter);
+
     const experiences = await InterviewExperience.find(filter)
       .populate("user", "name")
-      .sort({ createdAt: -1 });
+      .sort({ createdAt: -1 })
+      .skip(skip)
+      .limit(limit);
 
-    res.status(200).json(experiences);
+    res.status(200).json({
+      data: experiences,
+      currentPage: page,
+      totalPages: Math.ceil(totalItems / limit),
+      totalItems,
+    });
   } catch (error) {
     res.status(500).json({ message: "Server error" });
   }
 };
+
 
 // Get logged-in user's experiences
 const getMyInterviewExperiences = async (req, res) => {

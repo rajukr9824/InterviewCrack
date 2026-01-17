@@ -1,11 +1,18 @@
 const InterviewExperienceCard = ({ exp }) => {
   return (
     <div className="border rounded p-4 shadow-sm">
-      <h3 className="text-lg font-semibold">
-        {exp.companyName} – {exp.role}
-      </h3>
+      {/* Header */}
+      <div className="flex justify-between items-center">
+        <h3 className="text-lg font-semibold">
+          {exp.companyName} – {exp.role}
+        </h3>
 
-      <p className="text-sm text-gray-500">
+        <span className="text-sm text-gray-500">
+          Posted by {exp.user?.name}
+        </span>
+      </div>
+
+      <p className="text-sm text-gray-500 mt-1">
         Difficulty: {exp.difficulty}
       </p>
 

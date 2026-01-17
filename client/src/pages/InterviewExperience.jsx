@@ -12,35 +12,34 @@ const InterviewExperience = () => {
   // Add Experience toggle
   const [showAddForm, setShowAddForm] = useState(false);
 
-  // Pagination
+  // Pagination (BACKEND DRIVEN)
   const ITEMS_PER_PAGE = 4;
   const [currentPage, setCurrentPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
 
-  // Fetch experiences
   const loadExperiences = useCallback(async () => {
     try {
       setLoading(true);
       setError("");
-      const { data } = await getInterviewExperiences(company);
-      setExperiences(data);
+
+      const res = await getInterviewExperiences({
+        company,
+        page: currentPage,
+        limit: ITEMS_PER_PAGE,
+      });
+
+      setExperiences(res.data.data);
+      setTotalPages(res.data.totalPages);
     } catch {
       setError("Failed to load interview experiences");
     } finally {
       setLoading(false);
     }
-  }, [company]);
+  }, [company, currentPage]);
 
   useEffect(() => {
     loadExperiences();
   }, [loadExperiences]);
-
-  // Pagination logic
-  const totalPages = Math.ceil(experiences.length / ITEMS_PER_PAGE);
-
-  const paginatedExperiences = experiences.slice(
-    (currentPage - 1) * ITEMS_PER_PAGE,
-    currentPage * ITEMS_PER_PAGE
-  );
 
   return (
     <div className="max-w-5xl mx-auto p-4">
@@ -73,8 +72,9 @@ const InterviewExperience = () => {
         <div className="mb-6">
           <AddInterviewExperience
             onSuccess={() => {
+              setCurrentPage(1);
               loadExperiences();
-              setShowAddForm(false); // auto-close after add
+              setShowAddForm(false);
             }}
           />
         </div>
@@ -103,7 +103,7 @@ const InterviewExperience = () => {
 
       {/* List */}
       <div className="space-y-4 mt-6">
-        {paginatedExperiences.map((exp) => (
+        {experiences.map((exp) => (
           <InterviewExperienceCard key={exp._id} exp={exp} />
         ))}
       </div>

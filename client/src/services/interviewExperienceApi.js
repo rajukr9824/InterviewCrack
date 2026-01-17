@@ -1,8 +1,12 @@
 import api from "../api/axios";
 
 // Fetch all / filter by company
-export const getInterviewExperiences = (company = "") =>
-  api.get(`/api/interview-experience?company=${company}`);
+// services/interviewExperienceApi.js
+export const getInterviewExperiences = ({ company, page, limit }) => {
+  return api.get("/api/interview-experiences", {
+    params: { company, page, limit },
+  });
+};
 
 // Add interview experience
 export const addInterviewExperience = (data) =>
