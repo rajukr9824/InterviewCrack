@@ -63,13 +63,16 @@ const getMyInterviewExperiences = async (req, res) => {
   try {
     const experiences = await InterviewExperience.find({
       user: req.user.id,
-    }).sort({ createdAt: -1 });
+    })
+      .populate("user", "name")
+      .sort({ createdAt: -1 });
 
     res.json(experiences);
   } catch (err) {
     res.status(500).json({ message: "Server error" });
   }
 };
+
 
 // Update experience (owner only)
 const updateInterviewExperience = async (req, res) => {
