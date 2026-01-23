@@ -165,7 +165,7 @@ export default function Home() {
       </a>
 
       <a
-        href="https://youtube.com/@rajukumar-lg7le?si=W3JgefQfim3SHn8N"
+        href="https://youtube.com/@raju_creative_world?si=8EANEFv5SiEGv9oS"
         target="_blank"
         rel="noopener noreferrer"
         className="bg-gray-50 p-8 rounded-lg shadow hover:shadow-lg transition"
