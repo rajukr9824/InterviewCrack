@@ -75,71 +75,98 @@ export default function Home() {
       </section>
 
       {/* Main Sections */}
-      <section className="max-w-6xl mx-auto grid md:grid-cols-2 lg:grid-cols-4 gap-6 px-6 pb-20">
+      <section className="max-w-6xl mx-auto grid md:grid-cols-2 lg:grid-cols-5 gap-6 px-6 pb-20">
 
        
 
         {/* Learn Topics */}
-        <div className="bg-white p-6 rounded-lg shadow text-center">
-          <h3 className="text-lg font-semibold mb-2">
-            📘 Learn Topics
-          </h3>
-          <p className="text-gray-600 text-sm mb-4">
-            Revise important concepts with short explanations and more details.
-          </p>
+        <div className="bg-white p-6 rounded-lg shadow text-center flex flex-col justify-between">
+          <div>
+            <h3 className="text-lg font-semibold mb-2">
+              📘 Learn Topics
+            </h3>
+            <p className="text-gray-600 text-sm mb-4">
+              Revise important concepts with short explanations and more details.
+            </p>
+          </div>
           
           <Link
             to="/learn"
-            className="inline-block bg-black text-white px-4 py-2 rounded"
+            className="inline-block bg-black text-white px-4 py-2 rounded mt-auto"
           >
             Start Learning
           </Link>
         </div>
          {/* Interview Practice */}
-        <div className="bg-white p-6 rounded-lg shadow text-center">
-          <h3 className="text-lg font-semibold mb-2">
-            🎤 Interview Practice
-          </h3>
-          <p className="text-gray-600 text-sm mb-4">
-            Practice 10 interview questions by topic and difficulty.
-          </p>
+        <div className="bg-white p-6 rounded-lg shadow text-center flex flex-col justify-between">
+          <div>
+            <h3 className="text-lg font-semibold mb-2">
+              🎤 Interview Practice
+            </h3>
+            <p className="text-gray-600 text-sm mb-4">
+              Practice 10 interview questions by topic and difficulty.
+            </p>
+          </div>
           <Link
             to="/interview"
-            className="inline-block bg-black text-white px-4 py-2 rounded"
+            className="inline-block bg-black text-white px-4 py-2 rounded mt-auto"
           >
             Start Practice
           </Link>
         </div>
 
         {/* Quiz Section */}
-        <div className="bg-white p-6 rounded-lg shadow text-center">
-          <h3 className="text-lg font-semibold mb-2">
-            📝 Quiz Practice
-          </h3>
-          <p className="text-gray-600 text-sm mb-4">
-            Test your knowledge with 10 MCQs and instant scoring.
-          </p>
+        <div className="bg-white p-6 rounded-lg shadow text-center flex flex-col justify-between">
+          <div>
+            <h3 className="text-lg font-semibold mb-2">
+              📝 Quiz Practice
+            </h3>
+            <p className="text-gray-600 text-sm mb-4">
+              Test your knowledge with 10 MCQs and instant scoring.
+            </p>
+          </div>
           <Link
             to="/quiz"
-            className="inline-block bg-black text-white px-4 py-2 rounded"
+            className="inline-block bg-black text-white px-4 py-2 rounded mt-auto"
           >
             Take Quiz
           </Link>
         </div>
 
         {/* Daily Coding */}
-        <div className="bg-white p-6 rounded-lg shadow text-center">
-          <h3 className="text-lg font-semibold mb-2">
-            💻 Daily Coding
-          </h3>
-          <p className="text-gray-600 text-sm mb-4">
-            Solve one LeetCode problem daily by topic or randomly.
-          </p>
+        <div className="bg-white p-6 rounded-lg shadow text-center flex flex-col justify-between">
+          <div>
+            <h3 className="text-lg font-semibold mb-2">
+              💻 Daily Coding
+            </h3>
+            <p className="text-gray-600 text-sm mb-4">
+              Solve one LeetCode problem daily by topic or randomly.
+            </p>
+          </div>
           <Link
             to="/coding"
-            className="inline-block bg-black text-white px-4 py-2 rounded"
+            className="inline-block bg-black text-white px-4 py-2 rounded mt-auto"
           >
             Practice Now
+          </Link>
+        </div>
+
+        {/* Repository AI */}
+        <div className="bg-white p-6 rounded-lg shadow border-2 border-black text-center flex flex-col justify-between">
+          <div>
+            <span className="bg-black text-white text-xs font-bold px-2.5 py-0.5 rounded-full mb-2 inline-block">NEW AI</span>
+            <h3 className="text-lg font-semibold mb-2">
+              🤖 Repository AI
+            </h3>
+            <p className="text-gray-600 text-sm mb-4">
+              Index your GitHub repository to chat or take project interviews.
+            </p>
+          </div>
+          <Link
+            to="/repository-ai"
+            className="inline-block bg-black text-white px-4 py-2 rounded mt-auto font-semibold"
+          >
+            Open Repo AI
           </Link>
         </div>
        

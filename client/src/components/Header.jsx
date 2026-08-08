@@ -38,6 +38,13 @@ export default function Header() {
             Interview Experiences
           </Link>
 
+          <Link
+            to="/repository-ai"
+            className="text-gray-600 hover:text-black text-sm sm:text-base font-semibold"
+          >
+            🤖 Repository AI
+          </Link>
+
           {isAuthenticated ? (
             <>
               <Link

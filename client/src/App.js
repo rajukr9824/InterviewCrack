@@ -13,11 +13,7 @@ import Coding from "./pages/Coding";
 import CodingPractice from "./pages/CodingPractice";
 import Profile from "./pages/Profile";
 import InterviewExperience from "./pages/InterviewExperience";
-
-
-
-
-
+import RepositoryAI from "./pages/RepositoryAI";
 
 function App() {
   return (
@@ -41,6 +37,7 @@ function App() {
             <Route path="/coding-practice" element={<CodingPractice />} />
             <Route path="/profile" element={<Profile />} />
             <Route path="/interview-experiences" element={<InterviewExperience />}/>
+            <Route path="/repository-ai" element={<RepositoryAI />} />
           </Route>
         </Route>
 
