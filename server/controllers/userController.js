@@ -18,7 +18,7 @@ const getProfile = async (req, res) => {
 // UPDATE profile (name, avatar)
 const updateProfile = async (req, res) => {
   try {
-    const { name, avatar } = req.body;
+    const { name, email, avatar } = req.body;
 
     const user = await User.findById(req.user.id);
 
@@ -26,8 +26,24 @@ const updateProfile = async (req, res) => {
       return res.status(404).json({ message: "User not found" });
     }
 
-    if (name) user.name = name;
-    if (avatar) user.avatar = avatar;
+    if (name !== undefined) user.name = name;
+    if (avatar !== undefined) user.avatar = avatar;
+
+    if (email !== undefined) {
+      const normalizedEmail = email.trim().toLowerCase();
+      const existingUser = await User.findOne({
+        email: normalizedEmail,
+        _id: { $ne: req.user.id },
+      });
+
+      if (existingUser) {
+        return res.status(409).json({
+          message: "Email is already registered with another account",
+        });
+      }
+
+      user.email = normalizedEmail;
+    }
 
     await user.save();
 
@@ -36,6 +52,12 @@ const updateProfile = async (req, res) => {
       user,
     });
   } catch (error) {
+    if (error?.code === 11000 && error?.keyPattern?.email) {
+      return res.status(409).json({
+        message: "Email is already registered with another account",
+      });
+    }
+
     res.status(500).json({ message: "Server error" });
   }
 };
@@ -56,8 +78,6 @@ const deleteProfile = async (req, res) => {
     res.status(500).json({ message: "Server error" });
   }
 };
-
-
 
 // DAILY CODING PRACTICE (STREAK LOGIC)
 const updateDailyCoding = async (req, res) => {
@@ -81,8 +101,7 @@ const updateDailyCoding = async (req, res) => {
     } else {
       lastDate.setHours(0, 0, 0, 0);
 
-      const diffDays =
-        (today - lastDate) / (1000 * 60 * 60 * 24);
+      const diffDays = (today - lastDate) / (1000 * 60 * 60 * 24);
 
       if (diffDays === 1) {
         // consecutive day

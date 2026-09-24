@@ -10,13 +10,13 @@ export const getInterviewExperiences = ({ company, page, limit }) => {
 
 // Add interview experience
 export const addInterviewExperience = (data) =>
-  api.post("/api/interview-experience", data);
+  api.post("/api/interview-experiences", data);
 
 export const getMyInterviewExperiences = () =>
   api.get("/api/interview-experiences/my");
 
 export const updateInterviewExperience = (id, data) =>
-  api.put(`/api/interview-experience/${id}`, data);
+  api.put(`/api/interview-experiences/${id}`, data);
 
 export const deleteInterviewExperience = (id) =>
-  api.delete(`/api/interview-experience/${id}`);
+  api.delete(`/api/interview-experiences/${id}`);

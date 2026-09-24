@@ -2,10 +2,8 @@ import { useState, useEffect } from "react";
 import { useSelector, useDispatch } from "react-redux";
 import { updateProfile, logout } from "../redux/slices/authSlice";
 import { removeToken, getToken } from "../utils/Auth";
-import axios from "axios";
 import api from "../api/axios";
 import { useNavigate } from "react-router-dom";
-
 
 import {
   getMyInterviewExperiences,
@@ -22,22 +20,22 @@ export default function Profile() {
   const [isEditing, setIsEditing] = useState(false);
   const [avatarPreview, setAvatarPreview] = useState("");
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+  const [profileError, setProfileError] = useState("");
 
-  const [formData, setFormData] = useState({ name: "", email: "" });
+  const [formData, setFormData] = useState({ name: "" });
 
   // 🔹 Interview experience states
   const [myExperiences, setMyExperiences] = useState([]);
   const [editingExp, setEditingExp] = useState(null);
 
-const [showExperiences, setShowExperiences] = useState(false);
-const ITEMS_PER_PAGE = 3;
-const [currentPage, setCurrentPage] = useState(1);
-
+  const [showExperiences, setShowExperiences] = useState(false);
+  const ITEMS_PER_PAGE = 3;
+  const [currentPage, setCurrentPage] = useState(1);
 
   /* ---------------- Profile Data ---------------- */
   useEffect(() => {
     if (user) {
-      setFormData({ name: user.name, email: user.email });
+      setFormData({ name: user.name });
       if (user.avatar) setAvatarPreview(user.avatar);
     }
   }, [user]);
@@ -71,7 +69,7 @@ const [currentPage, setCurrentPage] = useState(1);
         const res = await api.put(
           "/api/user/profile",
           { avatar: reader.result },
-          { headers: { Authorization: `Bearer ${token}` } }
+          { headers: { Authorization: `Bearer ${token}` } },
         );
 
         dispatch(updateProfile({ avatar: res.data.user.avatar }));
@@ -84,17 +82,35 @@ const [currentPage, setCurrentPage] = useState(1);
   };
 
   /* ---------------- Profile Update ---------------- */
-  const handleUpdate = (e) => {
+  const handleUpdate = async (e) => {
     e.preventDefault();
-    dispatch(updateProfile(formData));
-    setIsEditing(false);
+    setProfileError("");
+
+    try {
+      const token = getToken();
+      const profileData = {
+        name: formData.name.trim(),
+      };
+      const { data } = await api.put("/api/user/profile", profileData, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+
+      dispatch(updateProfile(data.user));
+      setIsEditing(false);
+    } catch (error) {
+      setProfileError(
+        error.response?.status === 409
+          ? "Email is already registered with another account"
+          : "Failed to update profile",
+      );
+    }
   };
 
   /* ---------------- Delete Account ---------------- */
   const handleDeleteAccount = async () => {
     try {
       const token = localStorage.getItem("token");
-      await axios.delete("http://localhost:5000/api/user/profile", {
+      await api.delete("/api/user/profile", {
         headers: { Authorization: `Bearer ${token}` },
       });
 
@@ -121,16 +137,14 @@ const [currentPage, setCurrentPage] = useState(1);
   };
   const totalPages = Math.ceil(myExperiences.length / ITEMS_PER_PAGE);
 
-const paginatedExperiences = myExperiences.slice(
-  (currentPage - 1) * ITEMS_PER_PAGE,
-  currentPage * ITEMS_PER_PAGE
-);
-
+  const paginatedExperiences = myExperiences.slice(
+    (currentPage - 1) * ITEMS_PER_PAGE,
+    currentPage * ITEMS_PER_PAGE,
+  );
 
   return (
     <div className="bg-gray-50 px-4 sm:px-6 py-10">
       <div className="max-w-5xl mx-auto space-y-8">
-
         {/* ================= PROFILE HEADER ================= */}
         <div className="bg-white p-4 sm:p-6 rounded-lg shadow flex flex-col sm:flex-row items-center gap-6">
           <div className="text-center">
@@ -138,7 +152,7 @@ const paginatedExperiences = myExperiences.slice(
               src={
                 avatarPreview ||
                 `https://ui-avatars.com/api/?name=${encodeURIComponent(
-                  user.name
+                  user.name,
                 )}&background=000&color=fff`
               }
               alt="Profile"
@@ -146,7 +160,12 @@ const paginatedExperiences = myExperiences.slice(
             />
             <label className="block mt-2 text-sm cursor-pointer font-medium">
               Change Photo
-              <input type="file" accept="image/*" onChange={handleAvatarChange} className="hidden" />
+              <input
+                type="file"
+                accept="image/*"
+                onChange={handleAvatarChange}
+                className="hidden"
+              />
             </label>
           </div>
 
@@ -157,8 +176,7 @@ const paginatedExperiences = myExperiences.slice(
             </div>
             <button
               onClick={() => setIsEditing(true)}
-              className="bg-black text-white px-4 py-2 rounded"
-            >
+              className="bg-black text-white px-4 py-2 rounded">
               Edit Profile
             </button>
           </div>
@@ -166,127 +184,125 @@ const paginatedExperiences = myExperiences.slice(
 
         {/* ================= ACTIVITY ================= */}
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
-          <ActivityCard title="Interview Practice" value={formatCount(stats.interviewSessions, "Session", "Sessions")} />
-          <ActivityCard title="Quiz Practice" value={formatCount(stats.quizSessions, "Session", "Sessions")} />
-          <ActivityCard title="Daily Coding Streak" value={formatCount(stats.dailyCodingStreak, "Day", "Days")} />
+          <ActivityCard
+            title="Interview Practice"
+            value={formatCount(stats.interviewSessions, "Session", "Sessions")}
+          />
+          <ActivityCard
+            title="Quiz Practice"
+            value={formatCount(stats.quizSessions, "Session", "Sessions")}
+          />
+          <ActivityCard
+            title="Daily Coding Streak"
+            value={formatCount(stats.dailyCodingStreak, "Day", "Days")}
+          />
         </div>
 
         {/*==============HEADING AND SHOW BUTTON=======*/}
 
-       <div className="flex items-center gap-3 flex-wrap">
-  <h3 className="font-semibold">My Interview Experiences</h3>
+        <div className="flex items-center gap-3 flex-wrap">
+          <h3 className="font-semibold">My Interview Experiences</h3>
 
-  {/* Show / Hide */}
-  <button
-    onClick={() => {
-      setShowExperiences(!showExperiences);
-      setCurrentPage(1);
-    }}
-    className={`text-xs px-3 py-1 rounded transition
+          {/* Show / Hide */}
+          <button
+            onClick={() => {
+              setShowExperiences(!showExperiences);
+              setCurrentPage(1);
+            }}
+            className={`text-xs px-3 py-1 rounded transition
       ${
         showExperiences
           ? "border border-gray-400 text-gray-700"
           : "bg-black text-white hover:bg-gray-900"
-      }`}
-  >
-    {showExperiences ? "Hide" : "Show"}
-  </button>
+      }`}>
+            {showExperiences ? "Hide" : "Show"}
+          </button>
 
-  {/* Add Experience */}
-  <button
-    onClick={() => navigate("/interview-experiences")}
-    className="text-xs px-3 py-1 rounded border border-black text-black hover:bg-black hover:text-white transition"
-  >
-    + Add Experience
-  </button>
-</div>
-
-
-
-
+          {/* Add Experience */}
+          <button
+            onClick={() => navigate("/interview-experiences")}
+            className="text-xs px-3 py-1 rounded border border-black text-black hover:bg-black hover:text-white transition">
+            + Add Experience
+          </button>
+        </div>
 
         {/* ================= MY INTERVIEW EXPERIENCES ================= */}
         {showExperiences && (
-  <div className="bg-white p-4 sm:p-6 rounded-lg shadow mt-4">
+          <div className="bg-white p-4 sm:p-6 rounded-lg shadow mt-4">
+            {myExperiences.length === 0 ? (
+              <p className="text-gray-500 text-sm">
+                You have not added any interview experiences yet.
+              </p>
+            ) : (
+              <>
+                <div className="space-y-4">
+                  {paginatedExperiences.map((exp) => (
+                    <div key={exp._id} className="border p-4 rounded">
+                      <h4 className="font-medium">
+                        {exp.companyName} – {exp.role}
+                      </h4>
 
-    {myExperiences.length === 0 ? (
-      <p className="text-gray-500 text-sm">
-        You have not added any interview experiences yet.
-      </p>
-    ) : (
-      <>
-        <div className="space-y-4">
-          {paginatedExperiences.map((exp) => (
-            <div key={exp._id} className="border p-4 rounded">
-              <h4 className="font-medium">
-                {exp.companyName} – {exp.role}
-              </h4>
+                      <p className="text-sm text-gray-600 mb-2">{exp.rounds}</p>
+                      <p className="text-sm text-gray-700">{exp.description}</p>
 
-              <p className="text-sm text-gray-600 mb-2">{exp.rounds}</p>
-              <p className="text-sm text-gray-700">{exp.description}</p>
+                      <div className="flex gap-3 mt-3">
+                        <button
+                          onClick={() => setEditingExp(exp)}
+                          className="px-3 py-1 border rounded text-sm">
+                          Edit
+                        </button>
 
-              <div className="flex gap-3 mt-3">
-                <button
-                  onClick={() => setEditingExp(exp)}
-                  className="px-3 py-1 border rounded text-sm"
-                >
-                  Edit
-                </button>
+                        <button
+                          onClick={async () => {
+                            await deleteInterviewExperience(exp._id);
+                            setMyExperiences(
+                              myExperiences.filter((e) => e._id !== exp._id),
+                            );
+                          }}
+                          className="px-3 py-1 border border-red-500 text-red-600 rounded text-sm">
+                          Delete
+                        </button>
+                      </div>
+                    </div>
+                  ))}
+                </div>
 
-                <button
-                  onClick={async () => {
-                    await deleteInterviewExperience(exp._id);
-                    setMyExperiences(
-                      myExperiences.filter((e) => e._id !== exp._id)
-                    );
-                  }}
-                  className="px-3 py-1 border border-red-500 text-red-600 rounded text-sm"
-                >
-                  Delete
-                </button>
-              </div>
-            </div>
-          ))}
-        </div>
-
-        {/* Pagination Controls */}
-        {totalPages > 1 && (
-          <div className="flex justify-between items-center mt-4">
-            <button
-              disabled={currentPage === 1}
-              onClick={() => setCurrentPage((p) => p - 1)}
-              className={`px-3 py-1 border rounded text-sm
+                {/* Pagination Controls */}
+                {totalPages > 1 && (
+                  <div className="flex justify-between items-center mt-4">
+                    <button
+                      disabled={currentPage === 1}
+                      onClick={() => setCurrentPage((p) => p - 1)}
+                      className={`px-3 py-1 border rounded text-sm
                 ${
                   currentPage === 1
                     ? "opacity-50 cursor-not-allowed"
                     : "hover:bg-gray-100"
-                }`}
-            >
-              Previous
-            </button>
+                }`}>
+                      Previous
+                    </button>
 
-            <span className="text-sm text-gray-600">
-              Page {currentPage} of {totalPages}
-            </span>
+                    <span className="text-sm text-gray-600">
+                      Page {currentPage} of {totalPages}
+                    </span>
 
-            <button
-              disabled={currentPage === totalPages}
-              onClick={() => setCurrentPage((p) => p + 1)}
-              className={`px-3 py-1 border rounded text-sm
+                    <button
+                      disabled={currentPage === totalPages}
+                      onClick={() => setCurrentPage((p) => p + 1)}
+                      className={`px-3 py-1 border rounded text-sm
                 ${
                   currentPage === totalPages
                     ? "opacity-50 cursor-not-allowed"
                     : "hover:bg-gray-100"
-                }`}
-            >
-              Next
-            </button>
+                }`}>
+                      Next
+                    </button>
+                  </div>
+                )}
+              </>
+            )}
           </div>
         )}
-      </>
-    )}
-  </div>
-)}
 
         {/* ================= DANGER ZONE ================= */}
         <div className="bg-white p-4 sm:p-6 rounded-lg shadow border border-red-200">
@@ -296,8 +312,7 @@ const paginatedExperiences = myExperiences.slice(
           </p>
           <button
             onClick={() => setShowDeleteConfirm(true)}
-            className="bg-red-600 text-white px-4 py-2 rounded"
-          >
+            className="bg-red-600 text-white px-4 py-2 rounded">
             Delete Account
           </button>
         </div>
@@ -320,25 +335,21 @@ const paginatedExperiences = myExperiences.slice(
               <div className="flex justify-end gap-3">
                 <button
                   onClick={() => setEditingExp(null)}
-                  className="px-4 py-2 border rounded"
-                >
+                  className="px-4 py-2 border rounded">
                   Cancel
                 </button>
                 <button
                   onClick={async () => {
                     const { data } = await updateInterviewExperience(
                       editingExp._id,
-                      { description: editingExp.description }
+                      { description: editingExp.description },
                     );
                     setMyExperiences(
-                      myExperiences.map((e) =>
-                        e._id === data._id ? data : e
-                      )
+                      myExperiences.map((e) => (e._id === data._id ? data : e)),
                     );
                     setEditingExp(null);
                   }}
-                  className="bg-black text-white px-4 py-2 rounded"
-                >
+                  className="bg-black text-white px-4 py-2 rounded">
                   Save
                 </button>
               </div>
@@ -352,6 +363,10 @@ const paginatedExperiences = myExperiences.slice(
             <div className="bg-white p-6 rounded-lg w-full max-w-md">
               <h3 className="font-semibold mb-4">Update Profile</h3>
 
+              {profileError && (
+                <p className="text-red-600 text-sm mb-4">{profileError}</p>
+              )}
+
               <form onSubmit={handleUpdate} className="space-y-4">
                 <input
                   name="name"
@@ -359,17 +374,16 @@ const paginatedExperiences = myExperiences.slice(
                   onChange={handleChange}
                   className="w-full border px-4 py-2 rounded"
                 />
-                <input
-                  name="email"
-                  value={formData.email}
-                  onChange={handleChange}
-                  className="w-full border px-4 py-2 rounded"
-                />
                 <div className="flex justify-end gap-3">
-                  <button type="button" onClick={() => setIsEditing(false)} className="border px-4 py-2 rounded">
+                  <button
+                    type="button"
+                    onClick={() => setIsEditing(false)}
+                    className="border px-4 py-2 rounded">
                     Cancel
                   </button>
-                  <button type="submit" className="bg-black text-white px-4 py-2 rounded">
+                  <button
+                    type="submit"
+                    className="bg-black text-white px-4 py-2 rounded">
                     Save
                   </button>
                 </div>
@@ -389,17 +403,20 @@ const paginatedExperiences = myExperiences.slice(
                 Are you sure you want to permanently delete your account?
               </p>
               <div className="flex justify-end gap-3">
-                <button onClick={() => setShowDeleteConfirm(false)} className="border px-4 py-2 rounded">
+                <button
+                  onClick={() => setShowDeleteConfirm(false)}
+                  className="border px-4 py-2 rounded">
                   Cancel
                 </button>
-                <button onClick={handleDeleteAccount} className="bg-red-600 text-white px-4 py-2 rounded">
+                <button
+                  onClick={handleDeleteAccount}
+                  className="bg-red-600 text-white px-4 py-2 rounded">
                   Delete
                 </button>
               </div>
             </div>
           </div>
         )}
-
       </div>
     </div>
   );
