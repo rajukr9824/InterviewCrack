@@ -1,41 +1,65 @@
 # 🎯 InterviewCrack
 
-**InterviewCrack** is an AI-powered interview preparation platform designed to help candidates practice real interview questions, take topic-wise quizzes, and learn core computer science concepts in a structured and effective way.
+**InterviewCrack** is an AI-powered interview preparation platform that helps candidates practice real interview questions, take topic-wise quizzes, learn core CS concepts, and prepare for project-based interviews.
 
 ---
 
 ## 🚀 Features
 
 * 🔐 User authentication using JWT
-* 🤖 AI-based interview question generation with solutions
-* 📚 Topic-wise learning modules (OS, DBMS, DSA, CN, OOPs, React, JavaScript)
-* 📝 Interview practice mode with difficulty selection
+* 🤖 AI-powered interview question generation and solutions
+* 📚 Topic-wise learning modules — OS, DBMS, DSA, CN, OOPs, React, JavaScript
+* 📝 Interview practice with difficulty selection
 * 🧠 Quiz mode with MCQs and score tracking
 * 👤 User profile with practice history
+* 💬 **RepoChat** — chat with and ask questions about a GitHub repository using RAG
+* 🎯 **Project Interview** — AI-powered project-specific mock interviews with follow-up questions and answer evaluation
 
 ---
 
 ## 🛠 Tech Stack
 
-**Frontend**
+### Frontend
 
 * React.js
 * Tailwind CSS
 * JavaScript
 
-**Backend**
+### Backend
 
 * Node.js
 * Express.js
 * JWT Authentication
 
-**Database**
+### AI Service
+
+* FastAPI
+* RAG
+* FAISS
+* Gemini Embeddings
+* LLM-based question generation and evaluation
+
+### Database
 
 * MongoDB
 
-**AI**
+---
 
-* AI API for question generation and explanations
+## 🏗️ Architecture
+
+```text
+React.js
+    ↓
+Node.js / Express.js
+    ↓
+FastAPI AI Service
+    ↓
+RAG / FAISS / Gemini Embeddings / LLM
+```
+
+For **RepoChat**, repositories are parsed, chunked, embedded, and stored for semantic retrieval. Relevant code is retrieved using FAISS and provided to the LLM to generate grounded responses.
+
+**Project Interview** uses repository context to generate project-specific questions, follow-ups, and answer evaluations through multi-turn interview sessions.
 
 ---
 
@@ -44,8 +68,9 @@
 ```text
 InterviewCrack/
 │
-├── client/        # Frontend
-├── server/        # Backend
+├── client/        # React frontend
+├── server/        # Node.js + Express backend
+├── ai-service/    # FastAPI AI/RAG service
 ├── .gitignore
 ├── README.md
 └── package.json
@@ -55,7 +80,7 @@ InterviewCrack/
 
 ## ⚙️ Installation & Setup
 
-### 1️⃣ Clone the repository
+### 1️⃣ Clone the Repository
 
 ```bash
 git clone https://github.com/rajukr9824/InterviewCrack.git
@@ -78,9 +103,17 @@ MONGO_URI=your_mongodb_url
 JWT_SECRET=your_secret_key
 ```
 
----
+### 3️⃣ Setup AI Service
 
-### 3️⃣ Setup Frontend
+```bash
+cd ai-service
+pip install -r requirements.txt
+uvicorn main:app --reload
+```
+
+Configure the required AI/API keys in the AI service environment.
+
+### 4️⃣ Setup Frontend
 
 ```bash
 cd client
@@ -94,26 +127,28 @@ npm start
 
 InterviewCrack helps students and professionals:
 
-* Practice interviews in a real-time environment
+* Practice technical interviews
 * Strengthen CS fundamentals
-* Track learning progress
-* Improve confidence before technical interviews
+* Understand and discuss their own codebase
+* Prepare for project-based interview questions
+* Receive AI-powered feedback on interview answers
+* Track their preparation progress
 
 ---
 
 ## 🔮 Future Enhancements
 
 * Company-specific interview preparation
-* Resume review using AI
-* Mock interview with voice-based AI
-* Leaderboard and analytics
+* AI-powered resume review
+* Voice-based mock interviews
+* Advanced performance analytics
+* Leaderboard
 
 ---
 
 ## 🤝 Contributing
 
-Contributions are welcome!
-Feel free to fork this repository and submit a pull request.
+Contributions are welcome! Feel free to fork the repository and submit a pull request.
 
 ---
 
@@ -121,13 +156,4 @@ Feel free to fork this repository and submit a pull request.
 
 **Raju Kumar**
 📧 Email: [rajuk.ug22.cs@nitp.ac.in](mailto:rajuk.ug22.cs@nitp.ac.in)
-🔗 GitHub: [https://github.com/rajukr9824](https://github.com/rajukr9824)
-
----
-
-
-* 📄 Create **resume bullet points**
-* 🚀 Add **deployment guide**
-* 🧠 Write **API documentation**
-
-Just say **next** 👌
+🔗 GitHub: https://github.com/rajukr9824
