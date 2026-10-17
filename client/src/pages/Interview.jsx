@@ -3,21 +3,47 @@ import { useNavigate } from "react-router-dom";
 import { generateInterviewQuestions } from "../services/api";
 import { handleAIError } from "../utils/aiError";
 import { DEFAULT_INTERVIEW_QUESTIONS } from "../constants/defaultInterviewQuestions";
+import {
+  getTopicValidationError,
+  getTopicWordCount,
+  MAX_TOPIC_WORDS,
+  MAX_TOPIC_LENGTH,
+  normalizeTopic,
+} from "../utils/topicValidation";
+
+const TOPICS = [
+  "OOPS",
+  "Operating System",
+  "DBMS",
+  "Computer Network",
+  "DSA",
+  "JavaScript",
+  "MERN Stack",
+  "HR",
+  "Mock Interview",
+  "Python and AI/ML",
+];
+const CUSTOM_TOPIC = "__custom__";
 
 export default function Interview() {
   const [topic, setTopic] = useState("");
   const [difficulty, setDifficulty] = useState("");
   const [loading, setLoading] = useState(false);
   const [info, setInfo] = useState("");
+  const [customTopic, setCustomTopic] = useState("");
+  const [topicError, setTopicError] = useState("");
 
   const navigate = useNavigate();
+  const effectiveTopic = topic === CUSTOM_TOPIC ? normalizeTopic(customTopic) : topic;
+  const customTopicError =
+    topic === CUSTOM_TOPIC ? getTopicValidationError(customTopic) : "";
 
   const startInterview = async () => {
     try {
       setLoading(true);
       setInfo("");
 
-      const questions = await generateInterviewQuestions(topic, difficulty);
+      const questions = await generateInterviewQuestions(effectiveTopic, difficulty);
 
       navigate("/interview-practice", {
         state: { questions, topic },
@@ -27,8 +53,8 @@ export default function Interview() {
 
       navigate("/interview-practice", {
         state: {
-          questions: DEFAULT_INTERVIEW_QUESTIONS[topic] || [],
-          topic,
+          questions: DEFAULT_INTERVIEW_QUESTIONS[effectiveTopic] || [],
+          topic: effectiveTopic,
         },
       });
     } finally {
@@ -52,21 +78,35 @@ export default function Interview() {
         <label className="block text-sm font-medium mb-1">Topic</label>
         <select
           className="w-full p-3 border rounded-lg mb-4"
-          onChange={(e) => setTopic(e.target.value)}
+          value={topic}
+          onChange={(e) => {
+            setTopic(e.target.value);
+            setTopicError("");
+          }}
         >
           <option value="">Select Topic</option>
-          <option>OOPS</option>
-          <option>Operating System</option>
-          <option>DBMS</option>
-          <option>Computer Network</option>
-          <option>DSA</option>
-          <option>JavaScript</option>
-          <option>MERN Stack</option>
-          <option>HR</option>
-          <option>Mock Interview</option>
-          <option>Python and AI/ML</option>
-          
+          {TOPICS.map((item) => <option key={item}>{item}</option>)}
+          <option value={CUSTOM_TOPIC}>Custom Topic</option>
         </select>
+        {topic === CUSTOM_TOPIC && (
+          <div className="mb-4">
+            <input
+              value={customTopic}
+              maxLength={MAX_TOPIC_LENGTH}
+              onChange={(e) => {
+                setCustomTopic(e.target.value);
+                setTopicError("");
+              }}
+              placeholder="e.g., Java Multithreading, System Design"
+              className="w-full p-3 border rounded-lg"
+            />
+            <div className="flex justify-between text-xs text-gray-500 mt-1">
+              <span>{getTopicWordCount(customTopic)}/{MAX_TOPIC_WORDS} words</span>
+              <span>{customTopic.length}/{MAX_TOPIC_LENGTH}</span>
+            </div>
+          </div>
+        )}
+        {topicError && <p className="text-red-600 text-sm mb-4">{topicError}</p>}
 
         <label className="block text-sm font-medium mb-1">
           Difficulty
@@ -82,7 +122,7 @@ export default function Interview() {
         </select>
 
         <button
-          disabled={!topic || !difficulty || loading}
+          disabled={!effectiveTopic || Boolean(customTopicError) || !difficulty || loading}
           onClick={startInterview}
           className="w-full bg-black text-white py-4 rounded-xl font-bold disabled:bg-gray-300"
         >

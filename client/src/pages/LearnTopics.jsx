@@ -3,6 +3,13 @@ import { generateTopicExplanation } from "../services/api";
 import AIError from "../components/AiError";
 import { handleAIError } from "../utils/aiError";
 import { DEFAULT_LEARN_CONTENT } from "../constants/defaultLearnContent";
+import {
+  getTopicValidationError,
+  getTopicWordCount,
+  MAX_TOPIC_WORDS,
+  MAX_TOPIC_LENGTH,
+  normalizeTopic,
+} from "../utils/topicValidation";
 
 const TOPICS = [
   "OOPs",
@@ -13,6 +20,7 @@ const TOPICS = [
   "React",
   "JavaScript",
 ];
+const CUSTOM_TOPIC = "__custom__";
 
 const GFG_LINKS = {
   OOPs: "https://www.geeksforgeeks.org/oops-interview-questions/",
@@ -35,9 +43,19 @@ export default function LearnTopics() {
   const [error, setError] = useState("");
   const [hasRequested, setHasRequested] = useState(false);
   const [isFallback, setIsFallback] = useState(false); // ✅ NEW
+  const [customTopic, setCustomTopic] = useState("");
+  const [topicError, setTopicError] = useState("");
+  const effectiveTopic =
+    selectedTopic === CUSTOM_TOPIC ? normalizeTopic(customTopic) : selectedTopic;
+  const customTopicError =
+    selectedTopic === CUSTOM_TOPIC ? getTopicValidationError(customTopic) : "";
 
   const handleGenerate = async () => {
-    if (!selectedTopic) return;
+    const validationError = selectedTopic === CUSTOM_TOPIC ? customTopicError : "";
+    if (!effectiveTopic || validationError) {
+      setTopicError(validationError || "Please select or enter a topic.");
+      return;
+    }
 
     setLoading(true);
     setExplanation("");
@@ -46,11 +64,11 @@ export default function LearnTopics() {
     setIsFallback(false);
 
     try {
-      const data = await generateTopicExplanation(selectedTopic);
+      const data = await generateTopicExplanation(effectiveTopic);
       setExplanation(data);
     } catch (err) {
       setError(handleAIError(err));
-      setExplanation(DEFAULT_LEARN_CONTENT[selectedTopic]); // ✅ fallback
+      setExplanation(DEFAULT_LEARN_CONTENT[effectiveTopic]); // ✅ fallback
       setIsFallback(true);
     } finally {
       setLoading(false);
@@ -67,7 +85,10 @@ export default function LearnTopics() {
       <div className="max-w-xl mx-auto bg-white p-6 rounded shadow mb-6">
         <select
           value={selectedTopic}
-          onChange={(e) => setSelectedTopic(e.target.value)}
+          onChange={(e) => {
+            setSelectedTopic(e.target.value);
+            setTopicError("");
+          }}
           className="w-full border px-4 py-2 rounded mb-4"
         >
           <option value="">-- Select Topic --</option>
@@ -76,11 +97,31 @@ export default function LearnTopics() {
               {topic}
             </option>
           ))}
+          <option value={CUSTOM_TOPIC}>Custom Topic</option>
         </select>
+        {selectedTopic === CUSTOM_TOPIC && (
+          <div className="mb-4">
+            <input
+              value={customTopic}
+              maxLength={MAX_TOPIC_LENGTH}
+              onChange={(e) => {
+                setCustomTopic(e.target.value);
+                setTopicError("");
+              }}
+              placeholder="e.g., SQL Window Functions, React Hooks"
+              className="w-full border px-4 py-2 rounded"
+            />
+            <div className="flex justify-between text-xs text-gray-500 mt-1">
+              <span>{getTopicWordCount(customTopic)}/{MAX_TOPIC_WORDS} words</span>
+              <span>{customTopic.length}/{MAX_TOPIC_LENGTH}</span>
+            </div>
+          </div>
+        )}
+        {topicError && <p className="text-red-600 text-sm mb-4">{topicError}</p>}
 
         <button
           onClick={handleGenerate}
-          disabled={!selectedTopic || loading}
+          disabled={!effectiveTopic || Boolean(customTopicError) || loading}
           className="w-full bg-black text-white py-2 rounded disabled:opacity-50"
         >
           {loading ? "Generating..." : "Get Explanation"}
@@ -91,7 +132,7 @@ export default function LearnTopics() {
       {hasRequested && (
         <div className="max-w-3xl mx-auto bg-white p-6 rounded shadow">
           <h2 className="text-xl font-semibold mb-4">
-            {selectedTopic} – Interview Notes
+            {effectiveTopic} – Interview Notes
           </h2>
 
           {/* AI error message (informational) */}
@@ -115,12 +156,12 @@ export default function LearnTopics() {
               🔗 Practice Interview Questions:
             </p>
             <a
-              href={GFG_LINKS[selectedTopic]}
+              href={GFG_LINKS[effectiveTopic]}
               target="_blank"
               rel="noopener noreferrer"
               className="text-blue-600 underline"
             >
-              GeeksforGeeks {selectedTopic} Interview Questions
+              GeeksforGeeks {effectiveTopic} Interview Questions
             </a>
           </div>
         </div>

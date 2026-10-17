@@ -1,20 +1,22 @@
 require("dotenv").config();
 const { getProviderClients, sendMissingKeyError } = require("../services/aiProviderService");
+const { validateTopic } = require("../utils/topicValidation");
 
 const generateQuestions = async (req, res) => {
   try {
-    const { topic, difficulty } = req.body;
+    const { topic: rawTopic, difficulty } = req.body;
+    const { topic, error: topicError } = validateTopic(rawTopic);
 
-    if (!topic || !difficulty) {
+    if (topicError || !difficulty) {
       return res.status(400).json({
-        message: "Topic and difficulty required",
+        message: topicError || "Topic and difficulty required",
       });
     }
 
     const prompt = `
 Act as a Lead Technical Interviewer.
 
-Generate exactly 10 interview questions for ${topic} at ${difficulty} level.
+Generate exactly 10 interview questions focused only on the technical topic "${topic}" at ${difficulty} level.
 Provide a clear, structured solution for each question.
 
 Output MUST be a raw JSON array of objects with "question" and "solution" keys.

@@ -1,18 +1,20 @@
 require("dotenv").config();
 const { getProviderClients, sendMissingKeyError } = require("../services/aiProviderService");
+const { validateTopic } = require("../utils/topicValidation");
 
 const generateQuiz = async (req, res) => {
   try {
-    const { topic } = req.body;
+    const { topic: rawTopic } = req.body;
+    const { topic, error: topicError } = validateTopic(rawTopic);
 
-    if (!topic) {
-      return res.status(400).json({ message: "Topic is required" });
+    if (topicError) {
+      return res.status(400).json({ message: topicError });
     }
 
     const prompt = `
 Act as a technical interviewer.
 
-Generate exactly 10 multiple-choice questions for ${topic}.
+Generate exactly 10 multiple-choice questions focused only on the topic "${topic}".
 Each question must have:
 - question
 - 4 options
