@@ -31,10 +31,11 @@ class RepositoryChatService:
         prompt_service: Optional[PromptService] = None,
         llm_service: Optional[LLMService] = None,
         vector_store_service: Optional[VectorStoreService] = None,
+        gemini_api_key: Optional[str] = None,
     ):
-        self.retrieval_service = retrieval_service or RetrievalService()
+        self.retrieval_service = retrieval_service or RetrievalService(gemini_api_key)
         self.prompt_service = prompt_service or PromptService()
-        self.llm_service = llm_service or LLMService()
+        self.llm_service = llm_service or LLMService(gemini_api_key)
         self.vector_store_service = vector_store_service or VectorStoreService()
         self.default_top_k = settings.CHAT_TOP_K
 

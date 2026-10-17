@@ -10,6 +10,12 @@ const aiClient = axios.create({
   },
 });
 
+const getHeaders = (apiKeys = {}) => ({
+  "x-ai-service-secret": process.env.AI_SERVICE_INTERNAL_SECRET,
+  ...(apiKeys.gemini ? { "x-user-gemini-key": apiKeys.gemini } : {}),
+  ...(apiKeys.openai ? { "x-user-openai-key": apiKeys.openai } : {}),
+});
+
 /**
  * Handle axios error and throw a cleaner error structure.
  */
@@ -43,11 +49,11 @@ const handleAxiosError = (error) => {
 /**
  * 1. Index GitHub Repository
  */
-const indexRepository = async (repositoryUrl) => {
+const indexRepository = async (repositoryUrl, apiKeys) => {
   try {
     const response = await aiClient.post("/repository/index", {
       repository_url: repositoryUrl,
-    });
+    }, { headers: getHeaders(apiKeys) });
     return response.data;
   } catch (error) {
     handleAxiosError(error);
@@ -57,13 +63,13 @@ const indexRepository = async (repositoryUrl) => {
 /**
  * 2. Search Repository Chunks
  */
-const searchRepository = async (repositoryName, query, topK = 5) => {
+const searchRepository = async (repositoryName, query, topK = 5, apiKeys) => {
   try {
     const response = await aiClient.post("/repository/search", {
       repository_name: repositoryName,
       query,
       top_k: topK,
-    });
+    }, { headers: getHeaders(apiKeys) });
     return response.data;
   } catch (error) {
     handleAxiosError(error);
@@ -73,7 +79,7 @@ const searchRepository = async (repositoryName, query, topK = 5) => {
 /**
  * 3. Chat with Repository (RAG)
  */
-const chatRepository = async (repositoryName, question, topK) => {
+const chatRepository = async (repositoryName, question, topK, apiKeys) => {
   try {
     const payload = {
       repository_name: repositoryName,
@@ -82,7 +88,9 @@ const chatRepository = async (repositoryName, question, topK) => {
     if (topK !== undefined && topK !== null) {
       payload.top_k = topK;
     }
-    const response = await aiClient.post("/chat/repository", payload);
+    const response = await aiClient.post("/chat/repository", payload, {
+      headers: getHeaders(apiKeys),
+    });
     return response.data;
   } catch (error) {
     handleAxiosError(error);
@@ -92,12 +100,12 @@ const chatRepository = async (repositoryName, question, topK) => {
 /**
  * 4. Start Repository Interview
  */
-const startInterview = async (repositoryName, difficulty = "medium") => {
+const startInterview = async (repositoryName, difficulty = "medium", apiKeys) => {
   try {
     const response = await aiClient.post("/interview/start", {
       repository_name: repositoryName,
       difficulty,
-    });
+    }, { headers: getHeaders(apiKeys) });
     return response.data;
   } catch (error) {
     handleAxiosError(error);
@@ -107,12 +115,12 @@ const startInterview = async (repositoryName, difficulty = "medium") => {
 /**
  * 5. Submit Interview Answer
  */
-const submitAnswer = async (sessionId, answer) => {
+const submitAnswer = async (sessionId, answer, apiKeys) => {
   try {
     const response = await aiClient.post("/interview/answer", {
       session_id: sessionId,
       answer,
-    });
+    }, { headers: getHeaders(apiKeys) });
     return response.data;
   } catch (error) {
     handleAxiosError(error);
@@ -122,11 +130,11 @@ const submitAnswer = async (sessionId, answer) => {
 /**
  * 6. End Interview
  */
-const endInterview = async (sessionId) => {
+const endInterview = async (sessionId, apiKeys) => {
   try {
     const response = await aiClient.post("/interview/end", {
       session_id: sessionId,
-    });
+    }, { headers: getHeaders(apiKeys) });
     return response.data;
   } catch (error) {
     handleAxiosError(error);
@@ -136,9 +144,11 @@ const endInterview = async (sessionId) => {
 /**
  * 7. Get Interview Session State
  */
-const getSession = async (sessionId) => {
+const getSession = async (sessionId, apiKeys) => {
   try {
-    const response = await aiClient.get(`/interview/session/${sessionId}`);
+    const response = await aiClient.get(`/interview/session/${sessionId}`, {
+      headers: getHeaders(apiKeys),
+    });
     return response.data;
   } catch (error) {
     handleAxiosError(error);

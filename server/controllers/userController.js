@@ -1,9 +1,15 @@
 const User = require("../models/User");
+const {
+  PROVIDERS,
+  encryptApiKey,
+  validateApiKey,
+  getApiKeyStatus,
+} = require("../services/apiKeyService");
 
 // GET logged-in user's profile
 const getProfile = async (req, res) => {
   try {
-    const user = await User.findById(req.user.id).select("-password");
+    const user = await User.findById(req.user.id).select("-password -apiKeys");
 
     if (!user) {
       return res.status(404).json({ message: "User not found" });
@@ -47,9 +53,13 @@ const updateProfile = async (req, res) => {
 
     await user.save();
 
+    const safeUser = user.toObject();
+    delete safeUser.password;
+    delete safeUser.apiKeys;
+
     res.json({
       message: "Profile updated successfully",
-      user,
+      user: safeUser,
     });
   } catch (error) {
     if (error?.code === 11000 && error?.keyPattern?.email) {
@@ -170,6 +180,98 @@ const updateQuizSession = async (req, res) => {
   }
 };
 
+const getApiKeys = async (req, res) => {
+  try {
+    const user = await User.findById(req.user.id).select("apiKeys");
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    return res.json({ apiKeys: getApiKeyStatus(user) });
+  } catch (error) {
+    if (error.message === "API_KEY_ENCRYPTION_SECRET is not configured") {
+      return res.status(503).json({ message: "API key storage is not configured" });
+    }
+    return res.status(500).json({ message: "Server error" });
+  }
+};
+
+const updateApiKeys = async (req, res) => {
+  try {
+    const payload = req.body;
+    if (!payload || typeof payload !== "object" || Array.isArray(payload)) {
+      return res.status(400).json({ message: "A provider key payload is required" });
+    }
+    if (Buffer.byteLength(JSON.stringify(payload), "utf8") > 4096) {
+      return res.status(413).json({ message: "API key payload is too large" });
+    }
+
+    const requestedProviders = Object.keys(payload);
+    const unsupportedProvider = requestedProviders.find(
+      (provider) => !PROVIDERS.includes(provider),
+    );
+    if (unsupportedProvider) {
+      return res.status(400).json({ message: `Unsupported provider: ${unsupportedProvider}` });
+    }
+
+    if (requestedProviders.length === 0) {
+      return res.status(400).json({ message: "At least one provider key is required" });
+    }
+
+    const user = await User.findById(req.user.id);
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    if (!user.apiKeys) {
+      user.apiKeys = {};
+    }
+
+    for (const provider of requestedProviders) {
+      const validationError = validateApiKey(payload[provider], provider);
+      if (validationError) {
+        return res.status(400).json({ message: validationError });
+      }
+      user.apiKeys[provider] = encryptApiKey(payload[provider].trim());
+    }
+
+    await user.save();
+    return res.json({
+      message: "API keys updated successfully",
+      apiKeys: getApiKeyStatus(user),
+    });
+  } catch (error) {
+    if (error.message === "API_KEY_ENCRYPTION_SECRET is not configured") {
+      return res.status(503).json({ message: "API key storage is not configured" });
+    }
+    return res.status(500).json({ message: "Server error" });
+  }
+};
+
+const deleteApiKey = async (req, res) => {
+  try {
+    const { provider } = req.params;
+    if (!PROVIDERS.includes(provider)) {
+      return res.status(400).json({ message: `Unsupported provider: ${provider}` });
+    }
+
+    const user = await User.findById(req.user.id);
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    user.set(`apiKeys.${provider}`, undefined);
+    await user.save();
+
+    return res.json({
+      message: `${provider} API key removed successfully`,
+      apiKeys: getApiKeyStatus(user),
+    });
+  } catch (error) {
+    return res.status(500).json({ message: "Server error" });
+  }
+};
+
 module.exports = {
   getProfile,
   updateProfile,
@@ -177,4 +279,7 @@ module.exports = {
   updateDailyCoding,
   updateInterviewSession,
   updateQuizSession,
+  getApiKeys,
+  updateApiKeys,
+  deleteApiKey,
 };

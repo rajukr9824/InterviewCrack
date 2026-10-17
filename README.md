@@ -101,7 +101,16 @@ Create a `.env` file in `server/`:
 PORT=5000
 MONGO_URI=your_mongodb_url
 JWT_SECRET=your_secret_key
+API_KEY_ENCRYPTION_SECRET=generate-a-long-random-server-secret
+AI_SERVICE_URL=http://127.0.0.1:8000
+AI_SERVICE_INTERNAL_SECRET=generate-a-second-random-service-secret
 ```
+
+`API_KEY_ENCRYPTION_SECRET` is used only by the Node.js backend to encrypt user
+provider keys with AES-256-GCM before they are stored in MongoDB. Keep it
+stable when deploying so existing keys remain decryptable. `AI_SERVICE_INTERNAL_SECRET`
+authenticates private Node.js-to-FastAPI requests and must match the value used
+by the AI service. Never commit either secret or a `.env` file.
 
 ### 3️⃣ Setup AI Service
 
@@ -111,7 +120,38 @@ pip install -r requirements.txt
 uvicorn main:app --reload
 ```
 
-Configure the required AI/API keys in the AI service environment.
+Configure the matching internal service secret in the AI service environment:
+
+```env
+AI_SERVICE_INTERNAL_SECRET=the-same-value-as-server
+```
+
+The AI service receives a user's decrypted Gemini key only over authenticated
+internal requests and does not persist it. User requests that use the Node.js
+AI features or RepoChat must first have a key configured in **Profile →
+API Key Settings**.
+
+### User API keys
+
+From the profile page, users can independently save, replace, or remove their
+Gemini and OpenAI keys. Keys are sent over HTTPS, encrypted at rest by the
+backend, and never returned to the browser after saving. A Gemini key is
+required for repository indexing, repository search, RepoChat, and Project
+Interview because the current RAG service uses Gemini embeddings. The Node.js
+interview, learning, and quiz features can use either saved provider and will
+use OpenAI first when both are configured.
+
+Users can create keys from the provider dashboards:
+
+* [Google AI Studio](https://aistudio.google.com/app/apikey)
+* [OpenAI API keys](https://platform.openai.com/api-keys)
+
+For Render, set `API_KEY_ENCRYPTION_SECRET`, `AI_SERVICE_INTERNAL_SECRET`,
+`MONGO_URI`, and `JWT_SECRET` as backend secret environment variables. Set
+`AI_SERVICE_INTERNAL_SECRET` on the FastAPI service as well. Use long,
+independently generated random values and rotate them through a migration
+process rather than deleting the old encryption secret without re-encrypting
+stored keys.
 
 ### 4️⃣ Setup Frontend
 

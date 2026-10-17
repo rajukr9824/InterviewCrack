@@ -23,6 +23,13 @@ export default function Profile() {
   const [profileError, setProfileError] = useState("");
 
   const [formData, setFormData] = useState({ name: "" });
+  const [apiKeys, setApiKeys] = useState({ gemini: false, openai: false });
+  const [apiKeyInputs, setApiKeyInputs] = useState({ gemini: "", openai: "" });
+  const [visibleKeys, setVisibleKeys] = useState({ gemini: false, openai: false });
+  const [apiKeyLoading, setApiKeyLoading] = useState(true);
+  const [apiKeySaving, setApiKeySaving] = useState("");
+  const [apiKeyMessage, setApiKeyMessage] = useState("");
+  const [apiKeyError, setApiKeyError] = useState("");
 
   // 🔹 Interview experience states
   const [myExperiences, setMyExperiences] = useState([]);
@@ -39,6 +46,65 @@ export default function Profile() {
       if (user.avatar) setAvatarPreview(user.avatar);
     }
   }, [user]);
+
+  useEffect(() => {
+    const fetchApiKeys = async () => {
+      try {
+        const { data } = await api.get("/api/user/profile/api-keys");
+        setApiKeys(data.apiKeys);
+      } catch {
+        setApiKeyError("Unable to load API key settings.");
+      } finally {
+        setApiKeyLoading(false);
+      }
+    };
+
+    if (user) fetchApiKeys();
+  }, [user]);
+
+  const handleApiKeySave = async (provider) => {
+    const value = apiKeyInputs[provider].trim();
+    setApiKeyMessage("");
+    setApiKeyError("");
+
+    if (!value) {
+      setApiKeyError(`Enter a ${provider === "gemini" ? "Gemini" : "OpenAI"} API key.`);
+      return;
+    }
+
+    setApiKeySaving(provider);
+    try {
+      const { data } = await api.put("/api/user/profile/api-keys", {
+        [provider]: value,
+      });
+      setApiKeys(data.apiKeys);
+      setApiKeyInputs((current) => ({ ...current, [provider]: "" }));
+      setApiKeyMessage(
+        `${provider === "gemini" ? "Gemini" : "OpenAI"} API key saved successfully.`,
+      );
+    } catch (error) {
+      setApiKeyError(error.response?.data?.message || "Unable to save API key.");
+    } finally {
+      setApiKeySaving("");
+    }
+  };
+
+  const handleApiKeyRemove = async (provider) => {
+    setApiKeySaving(provider);
+    setApiKeyMessage("");
+    setApiKeyError("");
+    try {
+      const { data } = await api.delete(`/api/user/profile/api-keys/${provider}`);
+      setApiKeys(data.apiKeys);
+      setApiKeyMessage(
+        `${provider === "gemini" ? "Gemini" : "OpenAI"} API key removed.`,
+      );
+    } catch (error) {
+      setApiKeyError(error.response?.data?.message || "Unable to remove API key.");
+    } finally {
+      setApiKeySaving("");
+    }
+  };
 
   /* ---------------- Fetch My Experiences ---------------- */
   useEffect(() => {
@@ -196,6 +262,87 @@ export default function Profile() {
             title="Daily Coding Streak"
             value={formatCount(stats.dailyCodingStreak, "Day", "Days")}
           />
+        </div>
+
+        {/* ================= API KEY SETTINGS ================= */}
+        <div className="bg-white p-4 sm:p-6 rounded-lg shadow">
+          <h3 className="font-semibold mb-1">API Key Settings</h3>
+          <p className="text-sm text-gray-600 mb-4">
+            Your keys are encrypted before storage and are never shown again after saving.
+          </p>
+
+          {apiKeyLoading ? (
+            <p className="text-sm text-gray-500">Loading API key settings...</p>
+          ) : (
+            <div className="space-y-5">
+              {["gemini", "openai"].map((provider) => {
+                const label = provider === "gemini" ? "Google Gemini" : "OpenAI";
+                const configured = apiKeys[provider];
+                return (
+                  <div key={provider} className="border rounded p-4">
+                    <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 mb-3">
+                      <div>
+                        <h4 className="font-medium">{label}</h4>
+                        <p className="text-xs text-gray-500">
+                          {configured ? "Configured" : "Not configured"}
+                        </p>
+                      </div>
+                      {configured && (
+                        <button
+                          type="button"
+                          onClick={() => handleApiKeyRemove(provider)}
+                          disabled={apiKeySaving === provider}
+                          className="text-sm text-red-600 disabled:opacity-50">
+                          {apiKeySaving === provider ? "Removing..." : "Remove"}
+                        </button>
+                      )}
+                    </div>
+                    <div className="flex flex-col sm:flex-row gap-2">
+                      <div className="flex-1 flex">
+                        <input
+                          type={visibleKeys[provider] ? "text" : "password"}
+                          value={apiKeyInputs[provider]}
+                          onChange={(e) =>
+                            setApiKeyInputs((current) => ({
+                              ...current,
+                              [provider]: e.target.value,
+                            }))
+                          }
+                          placeholder={configured ? "Enter a new key to replace it" : "Paste your API key"}
+                          autoComplete="off"
+                          className="w-full border px-3 py-2 rounded-l text-sm"
+                        />
+                        <button
+                          type="button"
+                          onClick={() =>
+                            setVisibleKeys((current) => ({
+                              ...current,
+                              [provider]: !current[provider],
+                            }))
+                          }
+                          className="border border-l-0 px-3 rounded-r text-sm">
+                          {visibleKeys[provider] ? "Hide" : "Show"}
+                        </button>
+                      </div>
+                      <button
+                        type="button"
+                        onClick={() => handleApiKeySave(provider)}
+                        disabled={apiKeySaving === provider}
+                        className="bg-black text-white px-4 py-2 rounded text-sm disabled:opacity-50">
+                        {apiKeySaving === provider
+                          ? "Saving..."
+                          : configured
+                            ? "Update"
+                            : "Save"}
+                      </button>
+                    </div>
+                  </div>
+                );
+              })}
+              {apiKeyMessage && <p className="text-sm text-green-600">{apiKeyMessage}</p>}
+              {apiKeyError && <p className="text-sm text-red-600">{apiKeyError}</p>}
+            </div>
+          )}
         </div>
 
         {/*==============HEADING AND SHOW BUTTON=======*/}

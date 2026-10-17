@@ -25,6 +25,19 @@ const userSchema = new mongoose.Schema(
       default: "",
     },
 
+    apiKeys: {
+      gemini: {
+        encrypted: String,
+        iv: String,
+        authTag: String,
+      },
+      openai: {
+        encrypted: String,
+        iv: String,
+        authTag: String,
+      },
+    },
+
     stats: {
       interviewSessions: {
         type: Number,

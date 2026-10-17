@@ -12,9 +12,8 @@ load_dotenv(dotenv_path=_ENV_PATH)
 
 
 class Settings:
-    GEMINI_API_KEY: str | None = os.getenv("GEMINI_API_KEY")
-    OPENAI_API_KEY: str | None = os.getenv("OPENAI_API_KEY")
     DEFAULT_PROVIDER: str = os.getenv("DEFAULT_PROVIDER", "gemini")
+    AI_SERVICE_INTERNAL_SECRET: str | None = os.getenv("AI_SERVICE_INTERNAL_SECRET")
 
     # LLM Configuration
     EMBEDDING_MODEL = os.getenv("EMBEDDING_MODEL", "text-embedding-004")

@@ -1,14 +1,5 @@
-const OpenAI = require("openai");
-const { GoogleGenerativeAI } = require("@google/generative-ai");
 require("dotenv").config();
-
-/* ---------- OpenAI Setup ---------- */
-const openai = new OpenAI({
-  apiKey: process.env.OPENAI_API_KEY,
-});
-
-/* ---------- Gemini Setup ---------- */
-const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
+const { getProviderClients, sendMissingKeyError } = require("../services/aiProviderService");
 
 const generateQuestions = async (req, res) => {
   try {
@@ -31,52 +22,49 @@ Output MUST be a raw JSON array of objects with "question" and "solution" keys.
 Do NOT include markdown, backticks, or extra text.
 `;
 
-    /* ---------- TRY OPENAI FIRST ---------- */
-    try {
-      const response = await openai.chat.completions.create({
+    const { clients } = await getProviderClients(req.user.id);
+
+    if (clients.openai) {
+      try {
+        const response = await clients.openai.chat.completions.create({
         model: "gpt-4o-mini",
         messages: [{ role: "user", content: prompt }],
         temperature: 0.4,
-      });
+        });
 
-      const text = response.choices[0].message.content;
-      const questions = extractJSON(text);
+        const text = response.choices[0].message.content;
+        const questions = extractJSON(text);
 
-      return res.status(200).json({
-        questions,
-        source: "openai",
-      });
-    } catch (openAiError) {
-      console.error("OpenAI failed, switching to Gemini...");
+        return res.status(200).json({ questions, source: "openai" });
+      } catch (error) {
+        if (!clients.gemini) {
+          return res.status(502).json({ message: "OpenAI request failed" });
+        }
+      }
     }
 
-    /* ---------- FALLBACK TO GEMINI ---------- */
-    try {
-      const model = genAI.getGenerativeModel({
+    if (clients.gemini) {
+      try {
+        const model = clients.gemini.getGenerativeModel({
         model: "gemini-2.5-flash",
-      });
+        });
 
-      const result = await model.generateContent(prompt);
-      const response = await result.response;
-      const text = response.text();
+        const result = await model.generateContent(prompt);
+        const response = await result.response;
+        const text = response.text();
 
-      const questions = extractJSON(text);
+        const questions = extractJSON(text);
 
-      return res.status(200).json({
-        questions,
-        source: "gemini",
-      });
-    } catch (geminiError) {
-      console.error("Gemini failed");
+        return res.status(200).json({ questions, source: "gemini" });
+      } catch (error) {
+        return res.status(502).json({ message: "Gemini request failed" });
+      }
     }
 
-    /* ---------- FINAL FALLBACK ---------- */
-    res.status(500).json({
-      message: "Unable to generate interview questions at the moment",
-      source: "fallback",
-    });
+    return res.status(502).json({ message: "No AI provider is available" });
   } catch (error) {
-    console.error("INTERVIEW CONTROLLER ERROR:", error);
+    const response = sendMissingKeyError(res, error);
+    if (response) return response;
     res.status(500).json({ message: "Internal server error" });
   }
 };
