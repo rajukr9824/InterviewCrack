@@ -25,8 +25,6 @@ export default function Profile() {
   const [formData, setFormData] = useState({ name: "" });
   const [apiKeys, setApiKeys] = useState({ gemini: false, openai: false });
   const [apiKeyInputs, setApiKeyInputs] = useState({ gemini: "", openai: "" });
-  const [visibleKeys, setVisibleKeys] = useState({ gemini: false, openai: false });
-  const [revealedKeys, setRevealedKeys] = useState({ gemini: "", openai: "" });
   const [editingKeys, setEditingKeys] = useState({ gemini: false, openai: false });
   const [apiKeyLoading, setApiKeyLoading] = useState(true);
   const [apiKeySaving, setApiKeySaving] = useState("");
@@ -64,31 +62,6 @@ export default function Profile() {
     if (user) fetchApiKeys();
   }, [user]);
 
-  useEffect(() => {
-    setRevealedKeys({ gemini: "", openai: "" });
-    setVisibleKeys({ gemini: false, openai: false });
-  }, [user]);
-
-  const handleApiKeyVisibility = async (provider) => {
-    if (visibleKeys[provider]) {
-      setVisibleKeys((current) => ({ ...current, [provider]: false }));
-      setRevealedKeys((current) => ({ ...current, [provider]: "" }));
-      return;
-    }
-
-    setApiKeySaving(provider);
-    setApiKeyError("");
-    try {
-      const { data } = await api.get(`/api/user/profile/api-keys/${provider}`);
-      setRevealedKeys((current) => ({ ...current, [provider]: data.key }));
-      setVisibleKeys((current) => ({ ...current, [provider]: true }));
-    } catch (error) {
-      setApiKeyError(error.response?.data?.message || "Unable to retrieve API key.");
-    } finally {
-      setApiKeySaving("");
-    }
-  };
-
   const handleApiKeySave = async (provider) => {
     const value = apiKeyInputs[provider].trim();
     setApiKeyMessage("");
@@ -106,8 +79,6 @@ export default function Profile() {
       });
       setApiKeys(data.apiKeys);
       setApiKeyInputs((current) => ({ ...current, [provider]: "" }));
-      setRevealedKeys((current) => ({ ...current, [provider]: "" }));
-      setVisibleKeys((current) => ({ ...current, [provider]: false }));
       setEditingKeys((current) => ({ ...current, [provider]: false }));
       setApiKeyMessage(
         `${provider === "gemini" ? "Gemini" : "OpenAI"} API key saved successfully.`,
@@ -126,8 +97,6 @@ export default function Profile() {
     try {
       const { data } = await api.delete(`/api/user/profile/api-keys/${provider}`);
       setApiKeys(data.apiKeys);
-      setRevealedKeys((current) => ({ ...current, [provider]: "" }));
-      setVisibleKeys((current) => ({ ...current, [provider]: false }));
       setEditingKeys((current) => ({ ...current, [provider]: false }));
       setApiKeyMessage(
         `${provider === "gemini" ? "Gemini" : "OpenAI"} API key removed.`,
@@ -334,19 +303,8 @@ export default function Profile() {
                       {configured && !editingKeys[provider] ? (
                         <div className="flex-1 flex items-center border rounded text-sm px-3 py-2 min-w-0">
                           <span className="truncate flex-1 font-mono">
-                            {visibleKeys[provider] ? revealedKeys[provider] : "********"}
+                            {"********"}
                           </span>
-                          <button
-                            type="button"
-                            onClick={() => handleApiKeyVisibility(provider)}
-                            disabled={apiKeySaving === provider}
-                            className="ml-3 text-blue-700 disabled:opacity-50">
-                            {apiKeySaving === provider
-                              ? "Loading..."
-                              : visibleKeys[provider]
-                                ? "Hide"
-                                : "Show"}
-                          </button>
                         </div>
                       ) : (
                         <div className="flex-1 flex">
