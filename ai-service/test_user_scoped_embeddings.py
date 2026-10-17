@@ -23,11 +23,24 @@ class UserScopedEmbeddingTests(unittest.TestCase):
             service.store_path = store_path
             chunks = [{"chunk_id": "one", "content": "example", "embedding": [1.0, 2.0]}]
 
-            self.assertTrue(service.build_and_save_index("repo", chunks, "user-a"))
+            self.assertTrue(
+                service.build_and_save_index(
+                    "repo",
+                    chunks,
+                    "user-a",
+                    "gemini",
+                    "gemini-embedding-001",
+                )
+            )
             self.assertTrue(service.has_index("repo", "user-a"))
             self.assertFalse(service.has_index("repo", "user-b"))
 
-            loaded = service.load_index("repo", "user-a")
+            loaded = service.load_index(
+                "repo",
+                "user-a",
+                "gemini",
+                "gemini-embedding-001",
+            )
             self.assertIsNotNone(loaded)
             index, metadata = loaded
             self.assertEqual(index.d, 2)

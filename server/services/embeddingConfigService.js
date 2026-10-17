@@ -6,7 +6,7 @@ const {
 
 const EMBEDDING_CONFIGS = {
   gemini: {
-    models: ["text-embedding-004"],
+    models: ["gemini-embedding-001", "text-embedding-004"],
     requiresApiKey: true,
   },
 };

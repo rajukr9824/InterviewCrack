@@ -145,7 +145,7 @@ use OpenAI first when both are configured.
 
 Repository embeddings are configured separately from LLM generation keys in
 **Profile → Embedding Model Configuration**. The current supported configuration
-is Google Gemini with `text-embedding-004`; the embedding key is encrypted at
+is Google Gemini with `gemini-embedding-001` or `text-embedding-004`; the embedding key is encrypted at
 rest independently of the Gemini/OpenAI LLM keys. Repository indexing and
 search use this embedding configuration, while RepoChat and Project Interview
 also require the existing Gemini LLM key for generated responses.

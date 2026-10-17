@@ -32,7 +32,7 @@ export default function Profile() {
   const [apiKeyError, setApiKeyError] = useState("");
   const [embeddingConfig, setEmbeddingConfig] = useState({
     provider: "gemini",
-    model: "text-embedding-004",
+    model: "gemini-embedding-001",
     keyConfigured: false,
   });
   const [embeddingKey, setEmbeddingKey] = useState("");
@@ -491,7 +491,7 @@ export default function Profile() {
                 <label className="text-sm">
                   <span className="block font-medium mb-1">Embedding model</span>
                   <select
-                    value={embeddingConfig.model || "text-embedding-004"}
+                    value={embeddingConfig.model || "gemini-embedding-001"}
                     onChange={(e) =>
                       setEmbeddingConfig((current) => ({
                         ...current,
@@ -499,6 +499,9 @@ export default function Profile() {
                       }))
                     }
                     className="w-full border px-3 py-2 rounded">
+                    <option value="gemini-embedding-001">
+                      gemini-embedding-001
+                    </option>
                     <option value="text-embedding-004">
                       text-embedding-004
                     </option>

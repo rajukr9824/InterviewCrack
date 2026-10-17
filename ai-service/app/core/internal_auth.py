@@ -38,7 +38,7 @@ def require_embedding_config(
         )
     if x_embedding_provider != "gemini":
         raise HTTPException(status_code=400, detail="Unsupported embedding provider.")
-    if x_embedding_model != "text-embedding-004":
+    if x_embedding_model not in {"gemini-embedding-001", "text-embedding-004"}:
         raise HTTPException(status_code=400, detail="Unsupported embedding model.")
     return {
         "provider": x_embedding_provider,
