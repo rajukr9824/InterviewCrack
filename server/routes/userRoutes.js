@@ -8,6 +8,7 @@ const {
   updateInterviewSession,
   updateQuizSession,
   getApiKeys,
+  getApiKey,
   updateApiKeys,
   deleteApiKey,
 } = require("../controllers/userController");
@@ -19,6 +20,7 @@ router.get("/profile", protect, getProfile);
 router.put("/profile", protect, updateProfile);
 router.delete("/profile", protect, deleteProfile);
 router.get("/profile/api-keys", protect, getApiKeys);
+router.get("/profile/api-keys/:provider", protect, getApiKey);
 router.put("/profile/api-keys", protect, updateApiKeys);
 router.delete("/profile/api-keys/:provider", protect, deleteApiKey);
 

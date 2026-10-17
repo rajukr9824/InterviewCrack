@@ -26,6 +26,8 @@ export default function Profile() {
   const [apiKeys, setApiKeys] = useState({ gemini: false, openai: false });
   const [apiKeyInputs, setApiKeyInputs] = useState({ gemini: "", openai: "" });
   const [visibleKeys, setVisibleKeys] = useState({ gemini: false, openai: false });
+  const [revealedKeys, setRevealedKeys] = useState({ gemini: "", openai: "" });
+  const [editingKeys, setEditingKeys] = useState({ gemini: false, openai: false });
   const [apiKeyLoading, setApiKeyLoading] = useState(true);
   const [apiKeySaving, setApiKeySaving] = useState("");
   const [apiKeyMessage, setApiKeyMessage] = useState("");
@@ -62,6 +64,31 @@ export default function Profile() {
     if (user) fetchApiKeys();
   }, [user]);
 
+  useEffect(() => {
+    setRevealedKeys({ gemini: "", openai: "" });
+    setVisibleKeys({ gemini: false, openai: false });
+  }, [user]);
+
+  const handleApiKeyVisibility = async (provider) => {
+    if (visibleKeys[provider]) {
+      setVisibleKeys((current) => ({ ...current, [provider]: false }));
+      setRevealedKeys((current) => ({ ...current, [provider]: "" }));
+      return;
+    }
+
+    setApiKeySaving(provider);
+    setApiKeyError("");
+    try {
+      const { data } = await api.get(`/api/user/profile/api-keys/${provider}`);
+      setRevealedKeys((current) => ({ ...current, [provider]: data.key }));
+      setVisibleKeys((current) => ({ ...current, [provider]: true }));
+    } catch (error) {
+      setApiKeyError(error.response?.data?.message || "Unable to retrieve API key.");
+    } finally {
+      setApiKeySaving("");
+    }
+  };
+
   const handleApiKeySave = async (provider) => {
     const value = apiKeyInputs[provider].trim();
     setApiKeyMessage("");
@@ -79,6 +106,9 @@ export default function Profile() {
       });
       setApiKeys(data.apiKeys);
       setApiKeyInputs((current) => ({ ...current, [provider]: "" }));
+      setRevealedKeys((current) => ({ ...current, [provider]: "" }));
+      setVisibleKeys((current) => ({ ...current, [provider]: false }));
+      setEditingKeys((current) => ({ ...current, [provider]: false }));
       setApiKeyMessage(
         `${provider === "gemini" ? "Gemini" : "OpenAI"} API key saved successfully.`,
       );
@@ -96,6 +126,9 @@ export default function Profile() {
     try {
       const { data } = await api.delete(`/api/user/profile/api-keys/${provider}`);
       setApiKeys(data.apiKeys);
+      setRevealedKeys((current) => ({ ...current, [provider]: "" }));
+      setVisibleKeys((current) => ({ ...current, [provider]: false }));
+      setEditingKeys((current) => ({ ...current, [provider]: false }));
       setApiKeyMessage(
         `${provider === "gemini" ? "Gemini" : "OpenAI"} API key removed.`,
       );
@@ -298,43 +331,70 @@ export default function Profile() {
                       )}
                     </div>
                     <div className="flex flex-col sm:flex-row gap-2">
-                      <div className="flex-1 flex">
-                        <input
-                          type={visibleKeys[provider] ? "text" : "password"}
-                          value={apiKeyInputs[provider]}
-                          onChange={(e) =>
-                            setApiKeyInputs((current) => ({
-                              ...current,
-                              [provider]: e.target.value,
-                            }))
-                          }
-                          placeholder={configured ? "Enter a new key to replace it" : "Paste your API key"}
-                          autoComplete="off"
-                          className="w-full border px-3 py-2 rounded-l text-sm"
-                        />
+                      {configured && !editingKeys[provider] ? (
+                        <div className="flex-1 flex items-center border rounded text-sm px-3 py-2 min-w-0">
+                          <span className="truncate flex-1 font-mono">
+                            {visibleKeys[provider] ? revealedKeys[provider] : "********"}
+                          </span>
+                          <button
+                            type="button"
+                            onClick={() => handleApiKeyVisibility(provider)}
+                            disabled={apiKeySaving === provider}
+                            className="ml-3 text-blue-700 disabled:opacity-50">
+                            {apiKeySaving === provider
+                              ? "Loading..."
+                              : visibleKeys[provider]
+                                ? "Hide"
+                                : "Show"}
+                          </button>
+                        </div>
+                      ) : (
+                        <div className="flex-1 flex">
+                          <input
+                            type="password"
+                            value={apiKeyInputs[provider]}
+                            onChange={(e) =>
+                              setApiKeyInputs((current) => ({
+                                ...current,
+                                [provider]: e.target.value,
+                              }))
+                            }
+                            placeholder={
+                              configured
+                                ? "Enter a new key to replace it"
+                                : "Paste your API key"
+                            }
+                            autoComplete="off"
+                            className="w-full border px-3 py-2 rounded text-sm"
+                          />
+                        </div>
+                      )}
+                      {configured && !editingKeys[provider] && (
                         <button
                           type="button"
                           onClick={() =>
-                            setVisibleKeys((current) => ({
+                            setEditingKeys((current) => ({
                               ...current,
-                              [provider]: !current[provider],
+                              [provider]: true,
                             }))
                           }
-                          className="border border-l-0 px-3 rounded-r text-sm">
-                          {visibleKeys[provider] ? "Hide" : "Show"}
+                          className="border px-4 py-2 rounded text-sm">
+                          Replace
                         </button>
-                      </div>
-                      <button
-                        type="button"
-                        onClick={() => handleApiKeySave(provider)}
-                        disabled={apiKeySaving === provider}
-                        className="bg-black text-white px-4 py-2 rounded text-sm disabled:opacity-50">
-                        {apiKeySaving === provider
-                          ? "Saving..."
-                          : configured
-                            ? "Update"
-                            : "Save"}
-                      </button>
+                      )}
+                      {(!configured || editingKeys[provider]) && (
+                        <button
+                          type="button"
+                          onClick={() => handleApiKeySave(provider)}
+                          disabled={apiKeySaving === provider}
+                          className="bg-black text-white px-4 py-2 rounded text-sm disabled:opacity-50">
+                          {apiKeySaving === provider
+                            ? "Saving..."
+                            : configured
+                              ? "Update"
+                              : "Save"}
+                        </button>
+                      )}
                     </div>
                   </div>
                 );

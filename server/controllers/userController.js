@@ -2,6 +2,7 @@ const User = require("../models/User");
 const {
   PROVIDERS,
   encryptApiKey,
+  decryptApiKey,
   validateApiKey,
   getApiKeyStatus,
 } = require("../services/apiKeyService");
@@ -196,6 +197,37 @@ const getApiKeys = async (req, res) => {
   }
 };
 
+const getApiKey = async (req, res) => {
+  try {
+    const { provider } = req.params;
+    if (!PROVIDERS.includes(provider)) {
+      return res.status(400).json({ message: `Unsupported provider: ${provider}` });
+    }
+
+    const user = await User.findById(req.user.id).select("apiKeys");
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    const encryptedKey = user.apiKeys?.[provider];
+    if (!encryptedKey) {
+      return res.status(404).json({ message: `${provider} API key is not configured` });
+    }
+
+    const key = decryptApiKey(encryptedKey);
+    if (!key) {
+      return res.status(404).json({ message: `${provider} API key is not configured` });
+    }
+
+    return res.json({ provider, key });
+  } catch (error) {
+    if (error.message === "API_KEY_ENCRYPTION_SECRET is not configured") {
+      return res.status(503).json({ message: "API key storage is not configured" });
+    }
+    return res.status(500).json({ message: "Unable to retrieve API key" });
+  }
+};
+
 const updateApiKeys = async (req, res) => {
   try {
     const payload = req.body;
@@ -280,6 +312,7 @@ module.exports = {
   updateInterviewSession,
   updateQuizSession,
   getApiKeys,
+  getApiKey,
   updateApiKeys,
   deleteApiKey,
 };
