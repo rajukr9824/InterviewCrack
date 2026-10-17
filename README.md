@@ -141,6 +141,11 @@ Interview because the current RAG service uses Gemini embeddings. The Node.js
 interview, learning, and quiz features can use either saved provider and will
 use OpenAI first when both are configured.
 
+Repository indexes are stored under the authenticated user's owner directory,
+so users indexing repositories with the same name do not share vectors. Each
+index also records its Gemini embedding model and vector dimension; indexes
+without compatible metadata must be rebuilt rather than reused.
+
 Users can create keys from the provider dashboards:
 
 * [Google AI Studio](https://aistudio.google.com/app/apikey)

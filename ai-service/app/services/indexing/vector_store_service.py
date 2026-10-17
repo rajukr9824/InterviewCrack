@@ -1,6 +1,7 @@
 import os
 import json
 import logging
+import re
 import numpy as np
 from typing import Dict, List, Optional, Tuple
 
@@ -15,22 +16,39 @@ class VectorStoreService:
         self.store_path = settings.VECTOR_STORE_PATH
         os.makedirs(self.store_path, exist_ok=True)
 
-    def _get_index_path(self, repository_name: str) -> str:
-        return os.path.join(self.store_path, f"{repository_name}.index")
+    def _get_owner_path(self, user_id: str) -> str:
+        owner = re.sub(r"[^A-Za-z0-9_-]", "_", user_id)
+        path = os.path.join(self.store_path, owner)
+        os.makedirs(path, exist_ok=True)
+        return path
 
-    def _get_metadata_path(self, repository_name: str) -> str:
-        return os.path.join(self.store_path, f"{repository_name}_metadata.json")
+    def _get_index_path(self, repository_name: str, user_id: str) -> str:
+        return os.path.join(self._get_owner_path(user_id), f"{repository_name}.index")
 
-    def has_index(self, repository_name: str) -> bool:
+    def _get_metadata_path(self, repository_name: str, user_id: str) -> str:
+        return os.path.join(
+            self._get_owner_path(user_id), f"{repository_name}_metadata.json"
+        )
+
+    def _get_config_path(self, repository_name: str, user_id: str) -> str:
+        return os.path.join(
+            self._get_owner_path(user_id), f"{repository_name}_config.json"
+        )
+
+    def has_index(self, repository_name: str, user_id: str) -> bool:
         """
         Returns True when both FAISS index and metadata files exist for a repository.
         """
-        index_path = self._get_index_path(repository_name)
-        metadata_path = self._get_metadata_path(repository_name)
-        return os.path.exists(index_path) and os.path.exists(metadata_path)
+        index_path = self._get_index_path(repository_name, user_id)
+        metadata_path = self._get_metadata_path(repository_name, user_id)
+        return (
+            os.path.exists(index_path)
+            and os.path.exists(metadata_path)
+            and os.path.exists(self._get_config_path(repository_name, user_id))
+        )
 
     def build_and_save_index(
-        self, repository_name: str, embedded_chunks: List[Dict]
+        self, repository_name: str, embedded_chunks: List[Dict], user_id: str
     ) -> bool:
         """
         Builds a FAISS index from the provided embeddings and saves the index and metadata to disk.
@@ -91,13 +109,26 @@ class VectorStoreService:
             index.add(vectors)
 
             # Save FAISS Index
-            index_path = self._get_index_path(repository_name)
+            index_path = self._get_index_path(repository_name, user_id)
             faiss.write_index(index, index_path)
 
             # Save Metadata
-            metadata_path = self._get_metadata_path(repository_name)
+            metadata_path = self._get_metadata_path(repository_name, user_id)
             with open(metadata_path, "w", encoding="utf-8") as f:
                 json.dump(metadata_list, f, indent=4)
+
+            config_path = self._get_config_path(repository_name, user_id)
+            with open(config_path, "w", encoding="utf-8") as f:
+                json.dump(
+                    {
+                        "schema_version": 1,
+                        "provider": "gemini",
+                        "model": settings.EMBEDDING_MODEL,
+                        "dimension": dimension,
+                    },
+                    f,
+                    indent=4,
+                )
 
             logger.info(
                 f"Successfully saved FAISS index and metadata for {repository_name} with {len(metadata_list)} vectors."
@@ -109,15 +140,20 @@ class VectorStoreService:
             return False
 
     def load_index(
-        self, repository_name: str
+        self, repository_name: str, user_id: str
     ) -> Optional[Tuple[faiss.Index, List[Dict]]]:
         """
         Loads the FAISS index and metadata for a given repository.
         """
-        index_path = self._get_index_path(repository_name)
-        metadata_path = self._get_metadata_path(repository_name)
+        index_path = self._get_index_path(repository_name, user_id)
+        metadata_path = self._get_metadata_path(repository_name, user_id)
+        config_path = self._get_config_path(repository_name, user_id)
 
-        if not os.path.exists(index_path) or not os.path.exists(metadata_path):
+        if (
+            not os.path.exists(index_path)
+            or not os.path.exists(metadata_path)
+            or not os.path.exists(config_path)
+        ):
             logger.error(
                 f"Index or metadata not found for repository: {repository_name}"
             )
@@ -128,6 +164,20 @@ class VectorStoreService:
 
             with open(metadata_path, "r", encoding="utf-8") as f:
                 metadata = json.load(f)
+
+            with open(config_path, "r", encoding="utf-8") as f:
+                config = json.load(f)
+
+            if (
+                config.get("provider") != "gemini"
+                or config.get("model") != settings.EMBEDDING_MODEL
+                or config.get("dimension") != index.d
+            ):
+                logger.error(
+                    "Embedding configuration mismatch for repository %s",
+                    repository_name,
+                )
+                return None
 
             return index, metadata
         except Exception as e:

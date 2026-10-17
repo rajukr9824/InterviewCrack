@@ -17,11 +17,12 @@ logger.info(f"Repository service module loaded, Python path: {sys.executable}")
 
 
 class RepositoryService:
-    def __init__(self, gemini_api_key: str | None = None):
+    def __init__(self, gemini_api_key: str | None = None, user_id: str | None = None):
         self.parser_service = ParserService()
         self.chunk_service = ChunkService()
         self.embedding_service = EmbeddingService(gemini_api_key)
         self.vector_store_service = VectorStoreService()
+        self.user_id = user_id
 
     def clone_repository(self, repository_url: str) -> str:
         """
@@ -172,7 +173,7 @@ class RepositoryService:
         # Build the FAISS index and save it along with metadata
         logger.info("Building and saving FAISS index...")
         save_success = self.vector_store_service.build_and_save_index(
-            repository_name, embedded_chunks
+            repository_name, embedded_chunks, self.user_id
         )
         
         if not save_success:
@@ -187,4 +188,3 @@ class RepositoryService:
             "total_files": len(source_files),
             "message": "Repository indexed successfully.",
         }
-

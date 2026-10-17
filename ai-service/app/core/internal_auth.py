@@ -1,6 +1,7 @@
 import hmac
+from fastapi import Header
 
-from fastapi import Header, HTTPException
+from fastapi import HTTPException
 
 from app.core.config import settings
 
@@ -23,3 +24,9 @@ def require_gemini_key(x_user_gemini_key: str | None = Header(default=None)):
             detail="Configure a Gemini API key in your profile before using this feature.",
         )
     return x_user_gemini_key
+
+
+def require_user_id(x_user_id: str | None = Header(default=None)):
+    if not x_user_id or len(x_user_id) > 128:
+        raise HTTPException(status_code=401, detail="User context is required")
+    return x_user_id
