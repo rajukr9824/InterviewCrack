@@ -48,7 +48,12 @@ class VectorStoreService:
         )
 
     def build_and_save_index(
-        self, repository_name: str, embedded_chunks: List[Dict], user_id: str
+        self,
+        repository_name: str,
+        embedded_chunks: List[Dict],
+        user_id: str,
+        provider: str,
+        model: str,
     ) -> bool:
         """
         Builds a FAISS index from the provided embeddings and saves the index and metadata to disk.
@@ -122,8 +127,8 @@ class VectorStoreService:
                 json.dump(
                     {
                         "schema_version": 1,
-                        "provider": "gemini",
-                        "model": settings.EMBEDDING_MODEL,
+                        "provider": provider,
+                        "model": model,
                         "dimension": dimension,
                     },
                     f,
@@ -140,7 +145,11 @@ class VectorStoreService:
             return False
 
     def load_index(
-        self, repository_name: str, user_id: str
+        self,
+        repository_name: str,
+        user_id: str,
+        provider: str = "gemini",
+        model: str | None = None,
     ) -> Optional[Tuple[faiss.Index, List[Dict]]]:
         """
         Loads the FAISS index and metadata for a given repository.
@@ -169,8 +178,8 @@ class VectorStoreService:
                 config = json.load(f)
 
             if (
-                config.get("provider") != "gemini"
-                or config.get("model") != settings.EMBEDDING_MODEL
+                config.get("provider") != provider
+                or config.get("model") != (model or settings.EMBEDDING_MODEL)
                 or config.get("dimension") != index.d
             ):
                 logger.error(

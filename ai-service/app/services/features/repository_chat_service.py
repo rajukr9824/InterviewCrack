@@ -33,8 +33,11 @@ class RepositoryChatService:
         vector_store_service: Optional[VectorStoreService] = None,
         gemini_api_key: Optional[str] = None,
         user_id: Optional[str] = None,
+        embedding_config: Optional[Dict] = None,
     ):
-        self.retrieval_service = retrieval_service or RetrievalService(gemini_api_key, user_id)
+        self.retrieval_service = retrieval_service or RetrievalService(
+            gemini_api_key, user_id, embedding_config
+        )
         self.prompt_service = prompt_service or PromptService()
         self.llm_service = llm_service or LLMService(gemini_api_key)
         self.vector_store_service = vector_store_service or VectorStoreService()

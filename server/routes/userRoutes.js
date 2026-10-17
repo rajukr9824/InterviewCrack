@@ -10,6 +10,10 @@ const {
   getApiKeys,
   updateApiKeys,
   deleteApiKey,
+  getEmbeddingConfig,
+  updateEmbeddingConfig,
+  deleteEmbeddingConfig,
+  testEmbeddingConfig,
 } = require("../controllers/userController");
 
 const router = express.Router();
@@ -21,6 +25,10 @@ router.delete("/profile", protect, deleteProfile);
 router.get("/profile/api-keys", protect, getApiKeys);
 router.put("/profile/api-keys", protect, updateApiKeys);
 router.delete("/profile/api-keys/:provider", protect, deleteApiKey);
+router.get("/profile/embedding-config", protect, getEmbeddingConfig);
+router.put("/profile/embedding-config", protect, updateEmbeddingConfig);
+router.delete("/profile/embedding-config", protect, deleteEmbeddingConfig);
+router.post("/profile/embedding-config/test", protect, testEmbeddingConfig);
 
 // Daily Coding Streak
 router.post("/daily-coding", protect, updateDailyCoding);

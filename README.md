@@ -141,6 +141,20 @@ Interview because the current RAG service uses Gemini embeddings. The Node.js
 interview, learning, and quiz features can use either saved provider and will
 use OpenAI first when both are configured.
 
+### Embedding Model Configuration
+
+Repository embeddings are configured separately from LLM generation keys in
+**Profile → Embedding Model Configuration**. The current supported configuration
+is Google Gemini with `text-embedding-004`; the embedding key is encrypted at
+rest independently of the Gemini/OpenAI LLM keys. Repository indexing and
+search use this embedding configuration, while RepoChat and Project Interview
+also require the existing Gemini LLM key for generated responses.
+
+The profile includes a masked update-only key field and a **Test Configuration**
+action. Plaintext embedding keys are never returned in status responses or
+stored in browser state. Unsupported providers and model identifiers are
+rejected by the backend.
+
 Repository indexes are stored under the authenticated user's owner directory,
 so users indexing repositories with the same name do not share vectors. Each
 index also records its Gemini embedding model and vector dimension; indexes

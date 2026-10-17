@@ -2,7 +2,7 @@ import logging
 
 from fastapi import FastAPI
 
-from app.api import chat, interview, repository
+from app.api import chat, embedding, interview, repository
 
 # Configure logging to show INFO level messages
 logging.basicConfig(
@@ -15,3 +15,4 @@ app = FastAPI(title="InterviewCrack AI Service")
 app.include_router(repository.router)
 app.include_router(chat.router)
 app.include_router(interview.router)
+app.include_router(embedding.router)

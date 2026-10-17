@@ -38,6 +38,23 @@ const userSchema = new mongoose.Schema(
       },
     },
 
+    embeddingConfig: {
+      provider: {
+        type: String,
+        enum: ["gemini"],
+        default: null,
+      },
+      model: {
+        type: String,
+        default: null,
+      },
+      apiKey: {
+        encrypted: String,
+        iv: String,
+        authTag: String,
+      },
+    },
+
     stats: {
       interviewSessions: {
         type: Number,

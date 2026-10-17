@@ -17,12 +17,23 @@ logger.info(f"Repository service module loaded, Python path: {sys.executable}")
 
 
 class RepositoryService:
-    def __init__(self, gemini_api_key: str | None = None, user_id: str | None = None):
+    def __init__(
+        self,
+        gemini_api_key: str | None = None,
+        user_id: str | None = None,
+        embedding_config: dict | None = None,
+    ):
         self.parser_service = ParserService()
         self.chunk_service = ChunkService()
-        self.embedding_service = EmbeddingService(gemini_api_key)
+        embedding_config = embedding_config or {}
+        self.embedding_service = EmbeddingService(
+            api_key=embedding_config.get("api_key"),
+            provider=embedding_config.get("provider"),
+            model=embedding_config.get("model"),
+        )
         self.vector_store_service = VectorStoreService()
         self.user_id = user_id
+        self.embedding_config = embedding_config or {}
 
     def clone_repository(self, repository_url: str) -> str:
         """
@@ -33,6 +44,7 @@ class RepositoryService:
 
         repository_path = os.path.join(
             settings.REPOSITORY_STORAGE_PATH,
+            self.user_id or "unknown-user",
             repository_name,
         )
 
@@ -173,7 +185,11 @@ class RepositoryService:
         # Build the FAISS index and save it along with metadata
         logger.info("Building and saving FAISS index...")
         save_success = self.vector_store_service.build_and_save_index(
-            repository_name, embedded_chunks, self.user_id
+            repository_name,
+            embedded_chunks,
+            self.user_id,
+            self.embedding_config["provider"],
+            self.embedding_config["model"],
         )
         
         if not save_success:
