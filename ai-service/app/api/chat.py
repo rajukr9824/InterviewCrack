@@ -7,7 +7,12 @@ from app.services.features.repository_chat_service import (
     RepositoryChatError,
     RepositoryChatService,
 )
-from app.core.internal_auth import require_gemini_key, require_internal_request
+from app.core.internal_auth import (
+    require_gemini_key,
+    require_embedding_config,
+    require_internal_request,
+    require_user_id,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -19,9 +24,15 @@ router = APIRouter(
 
 def get_repository_chat_service(
     x_user_gemini_key: str = Depends(require_gemini_key),
+    embedding_config: dict = Depends(require_embedding_config),
+    user_id: str = Depends(require_user_id),
 ):
     """Lazy dependency to create service only when needed."""
-    return RepositoryChatService(gemini_api_key=x_user_gemini_key)
+    return RepositoryChatService(
+        gemini_api_key=x_user_gemini_key,
+        embedding_config=embedding_config,
+        user_id=user_id,
+    )
 
 
 @router.post("/repository", response_model=ChatResponse)
@@ -43,8 +54,8 @@ def chat_with_repository(
             detail=e.message,
         )
     except Exception as e:
-        logger.exception(f"Unexpected chat error: {e}")
+        logger.error("Unexpected chat error; provider details omitted")
         raise HTTPException(
             status_code=500,
-            detail="Unexpected error while processing repository chat request.",
+            detail="Repository chat failed. Verify your configured Gemini key and try again.",
         )

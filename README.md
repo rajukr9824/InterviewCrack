@@ -135,11 +135,33 @@ API Key Settings**.
 
 From the profile page, users can independently save, replace, or remove their
 Gemini and OpenAI keys. Keys are sent over HTTPS, encrypted at rest by the
-backend, and never returned to the browser after saving. A Gemini key is
-required for repository indexing, repository search, RepoChat, and Project
-Interview because the current RAG service uses Gemini embeddings. The Node.js
-interview, learning, and quiz features can use either saved provider and will
-use OpenAI first when both are configured.
+backend, and never returned to the browser after saving. A Gemini key is required for repository indexing, repository search, RepoChat,
+and Project Interview because the current RAG service uses Gemini embeddings.
+The saved Gemini key is used for embeddings by default; users may optionally
+configure a separate embedding key and model in the embedding settings. The
+Node.js interview, learning, and quiz features can use either saved provider
+and will use OpenAI first when both are configured.
+
+### Embedding Model Configuration
+
+Repository embeddings can be configured separately from LLM generation keys in
+**Profile → Embedding Model Configuration**. The current supported configuration
+is Google Gemini with `gemini-embedding-001` or `text-embedding-004`; the
+optional embedding key is encrypted at rest independently of the
+Gemini/OpenAI LLM keys. Without a separate embedding configuration, repository
+indexing and search use the saved Gemini key with `text-embedding-004`.
+RepoChat and Project Interview also require the saved Gemini LLM key for
+generated responses.
+
+The profile includes a masked update-only key field and a **Test Configuration**
+action. Plaintext embedding keys are never returned in status responses or
+stored in browser state. Unsupported providers and model identifiers are
+rejected by the backend.
+
+Repository indexes are stored under the authenticated user's owner directory,
+so users indexing repositories with the same name do not share vectors. Each
+index also records its Gemini embedding model and vector dimension; indexes
+without compatible metadata must be rebuilt rather than reused.
 
 Users can create keys from the provider dashboards:
 

@@ -38,11 +38,16 @@ class ProjectInterviewService:
         llm_service: Optional[LLMService] = None,
         vector_store_service: Optional[VectorStoreService] = None,
         gemini_api_key: Optional[str] = None,
+        user_id: Optional[str] = None,
+        embedding_config: Optional[Dict] = None,
     ):
-        self.retrieval_service = retrieval_service or RetrievalService(gemini_api_key)
+        self.retrieval_service = retrieval_service or RetrievalService(
+            gemini_api_key, user_id, embedding_config
+        )
         self.prompt_service = prompt_service or PromptService()
         self.llm_service = llm_service or LLMService(gemini_api_key)
         self.vector_store_service = vector_store_service or VectorStoreService()
+        self.user_id = user_id
 
     def start_interview(
         self, repository_name: str, difficulty: str = "medium"
@@ -56,7 +61,7 @@ class ProjectInterviewService:
         self._validate_repository_name(repository_name)
         self._validate_difficulty(difficulty)
 
-        if not self.vector_store_service.has_index(repository_name):
+        if not self.vector_store_service.has_index(repository_name, self.user_id):
             raise ProjectInterviewError(
                 f"Repository '{repository_name}' is not indexed or index files are missing.",
                 status_code=404,
@@ -73,6 +78,7 @@ class ProjectInterviewService:
 
         session = {
             "session_id": session_id,
+            "user_id": self.user_id,
             "repository_name": repository_name,
             "difficulty": difficulty,
             "questions": [first_question],
@@ -101,7 +107,7 @@ class ProjectInterviewService:
         self._validate_session_id(session_id)
         self._validate_answer(answer)
 
-        session = ProjectInterviewService._sessions[session_id]
+        session = self._get_owned_session(session_id)
         repository_name = session["repository_name"]
         difficulty = session["difficulty"]
         current_question_index = session["current_question_index"]
@@ -184,7 +190,7 @@ class ProjectInterviewService:
         self._validate_session_id(session_id)
         logger.info(f"Session validated successfully")
 
-        session = ProjectInterviewService._sessions[session_id]
+        session = self._get_owned_session(session_id)
         logger.info(f"Session loaded: {session.get('repository_name')}")
         
         total_questions = len(session["questions"])
@@ -233,7 +239,7 @@ class ProjectInterviewService:
 
         self._validate_session_id(session_id)
 
-        session = ProjectInterviewService._sessions[session_id]
+        session = self._get_owned_session(session_id)
 
         return {
             "session_id": session["session_id"],
@@ -253,6 +259,12 @@ class ProjectInterviewService:
                 "Invalid repository_name. Use only letters, numbers, dot, underscore, or hyphen.",
                 status_code=422,
             )
+
+    def _get_owned_session(self, session_id: str) -> Dict:
+        session = ProjectInterviewService._sessions[session_id]
+        if session.get("user_id") != self.user_id:
+            raise ProjectInterviewError("Interview session not found.", status_code=404)
+        return session
 
     def _validate_difficulty(self, difficulty: str) -> None:
         if difficulty not in self._VALID_DIFFICULTIES:

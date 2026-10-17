@@ -32,11 +32,16 @@ class RepositoryChatService:
         llm_service: Optional[LLMService] = None,
         vector_store_service: Optional[VectorStoreService] = None,
         gemini_api_key: Optional[str] = None,
+        user_id: Optional[str] = None,
+        embedding_config: Optional[Dict] = None,
     ):
-        self.retrieval_service = retrieval_service or RetrievalService(gemini_api_key)
+        self.retrieval_service = retrieval_service or RetrievalService(
+            gemini_api_key, user_id, embedding_config
+        )
         self.prompt_service = prompt_service or PromptService()
         self.llm_service = llm_service or LLMService(gemini_api_key)
         self.vector_store_service = vector_store_service or VectorStoreService()
+        self.user_id = user_id
         self.default_top_k = settings.CHAT_TOP_K
 
     def chat(
@@ -54,7 +59,7 @@ class RepositoryChatService:
                 "top_k must be between 1 and 20.", status_code=422
             )
 
-        if not self.vector_store_service.has_index(repository_name):
+        if not self.vector_store_service.has_index(repository_name, self.user_id):
             raise RepositoryChatError(
                 f"Repository '{repository_name}' is not indexed or index files are missing.",
                 status_code=404,

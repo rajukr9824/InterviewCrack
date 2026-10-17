@@ -9,9 +9,22 @@ logger = logging.getLogger(__name__)
 
 
 class RetrievalService:
-    def __init__(self, gemini_api_key: str | None = None):
-        self.embedding_service = EmbeddingService(gemini_api_key)
+    def __init__(
+        self,
+        gemini_api_key: str | None = None,
+        user_id: str | None = None,
+        embedding_config: dict | None = None,
+    ):
+        embedding_config = embedding_config or {}
+        self.embedding_service = EmbeddingService(
+            api_key=embedding_config.get("api_key"),
+            provider=embedding_config.get("provider"),
+            model=embedding_config.get("model"),
+        )
         self.vector_store_service = VectorStoreService()
+        self.user_id = user_id
+        self.embedding_provider = embedding_config.get("provider") if embedding_config else None
+        self.embedding_model = embedding_config.get("model") if embedding_config else None
 
     def search(self, repository_name: str, query: str, top_k: int = 5) -> Dict:
         """
@@ -42,7 +55,12 @@ class RetrievalService:
             return {"query": query, "results": []}
 
         # 2. Load FAISS Index and Metadata
-        store_data = self.vector_store_service.load_index(repository_name)
+        store_data = self.vector_store_service.load_index(
+            repository_name,
+            self.user_id,
+            self.embedding_provider or "gemini",
+            self.embedding_model,
+        )
         if not store_data:
             logger.error(f"Could not load vector store for {repository_name}")
             return {"query": query, "results": []}

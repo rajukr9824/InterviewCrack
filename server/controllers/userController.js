@@ -5,11 +5,22 @@ const {
   validateApiKey,
   getApiKeyStatus,
 } = require("../services/apiKeyService");
+const {
+  EMBEDDING_CONFIGS,
+  getSupportedEmbeddingConfig,
+  validateEmbeddingSelection,
+  getEmbeddingConfigStatus,
+  encryptEmbeddingKey,
+  getUserEmbeddingConfig,
+} = require("../services/embeddingConfigService");
+const repositoryService = require("../services/repositoryService");
 
 // GET logged-in user's profile
 const getProfile = async (req, res) => {
   try {
-    const user = await User.findById(req.user.id).select("-password -apiKeys");
+    const user = await User.findById(req.user.id).select(
+      "-password -apiKeys -embeddingConfig",
+    );
 
     if (!user) {
       return res.status(404).json({ message: "User not found" });
@@ -56,6 +67,7 @@ const updateProfile = async (req, res) => {
     const safeUser = user.toObject();
     delete safeUser.password;
     delete safeUser.apiKeys;
+    delete safeUser.embeddingConfig;
 
     res.json({
       message: "Profile updated successfully",
@@ -272,6 +284,90 @@ const deleteApiKey = async (req, res) => {
   }
 };
 
+const getEmbeddingConfig = async (req, res) => {
+  try {
+    const user = await User.findById(req.user.id).select("embeddingConfig");
+    if (!user) return res.status(404).json({ message: "User not found" });
+    return res.json({
+      config: getEmbeddingConfigStatus(user),
+      supported: EMBEDDING_CONFIGS,
+    });
+  } catch {
+    return res.status(500).json({ message: "Server error" });
+  }
+};
+
+const updateEmbeddingConfig = async (req, res) => {
+  try {
+    const { provider, model, apiKey } = req.body || {};
+    const user = await User.findById(req.user.id);
+    if (!user) return res.status(404).json({ message: "User not found" });
+
+    const existingKey = Boolean(user.embeddingConfig?.apiKey?.encrypted);
+    const validationError = validateEmbeddingSelection(
+      provider,
+      model,
+      typeof apiKey === "string" ? apiKey.trim() : "",
+      existingKey,
+    );
+    if (validationError) return res.status(400).json({ message: validationError });
+
+    const supported = getSupportedEmbeddingConfig(provider, model);
+    if (!supported) return res.status(400).json({ message: "Unsupported embedding configuration." });
+
+    user.embeddingConfig = {
+      provider,
+      model,
+      apiKey: apiKey
+        ? encryptEmbeddingKey(apiKey)
+        : user.embeddingConfig?.apiKey,
+    };
+    await user.save();
+
+    return res.json({
+      message: "Embedding configuration saved successfully.",
+      config: getEmbeddingConfigStatus(user),
+    });
+  } catch (error) {
+    if (error.message === "API_KEY_ENCRYPTION_SECRET is not configured") {
+      return res.status(503).json({ message: "API key storage is not configured" });
+    }
+    return res.status(500).json({ message: "Server error" });
+  }
+};
+
+const deleteEmbeddingConfig = async (req, res) => {
+  try {
+    const user = await User.findById(req.user.id);
+    if (!user) return res.status(404).json({ message: "User not found" });
+    user.set("embeddingConfig", undefined);
+    await user.save();
+    return res.json({
+      message: "Embedding configuration removed successfully.",
+      config: getEmbeddingConfigStatus(user),
+    });
+  } catch {
+    return res.status(500).json({ message: "Server error" });
+  }
+};
+
+const testEmbeddingConfig = async (req, res) => {
+  try {
+    const user = await User.findById(req.user.id).select("embeddingConfig apiKeys");
+    if (!user) return res.status(404).json({ message: "User not found" });
+    const embeddingConfig = getUserEmbeddingConfig(user);
+    const result = await repositoryService.testEmbeddingConfig(
+      embeddingConfig,
+      req.user.id,
+    );
+    return res.json(result);
+  } catch (error) {
+    return res.status(error.status || 502).json({
+      message: error.message || "Embedding configuration test failed.",
+    });
+  }
+};
+
 module.exports = {
   getProfile,
   updateProfile,
@@ -282,4 +378,8 @@ module.exports = {
   getApiKeys,
   updateApiKeys,
   deleteApiKey,
+  getEmbeddingConfig,
+  updateEmbeddingConfig,
+  deleteEmbeddingConfig,
+  testEmbeddingConfig,
 };

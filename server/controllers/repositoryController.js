@@ -1,7 +1,18 @@
 const repositoryService = require("../services/repositoryService");
 const { getUserApiKeys } = require("../services/apiKeyService");
+const { getUserEmbeddingConfig } = require("../services/embeddingConfigService");
 
 const getKeysOrThrow = (req) => getUserApiKeys(req.user.id);
+const getEmbeddingConfigOrThrow = async (req) => {
+  const User = require("../models/User");
+  const user = await User.findById(req.user.id).select("embeddingConfig apiKeys");
+  if (!user) {
+    const error = new Error("User not found");
+    error.status = 404;
+    throw error;
+  }
+  return getUserEmbeddingConfig(user);
+};
 
 /**
  * 1. POST /api/repository/index
@@ -19,7 +30,9 @@ const indexRepository = async (req, res) => {
 
     const result = await repositoryService.indexRepository(
       repository_url,
-      await getKeysOrThrow(req),
+      {},
+      req.user.id,
+      await getEmbeddingConfigOrThrow(req),
     );
     return res.status(200).json(result);
   } catch (error) {
@@ -48,7 +61,9 @@ const searchRepository = async (req, res) => {
       repository_name,
       query,
       top_k,
-      await getKeysOrThrow(req),
+      {},
+      req.user.id,
+      await getEmbeddingConfigOrThrow(req),
     );
     return res.status(200).json(result);
   } catch (error) {
@@ -78,6 +93,8 @@ const chatRepository = async (req, res) => {
       question,
       top_k,
       await getKeysOrThrow(req),
+      req.user.id,
+      await getEmbeddingConfigOrThrow(req),
     );
     return res.status(200).json(result);
   } catch (error) {
@@ -106,6 +123,8 @@ const startInterview = async (req, res) => {
       repository_name,
       difficulty,
       await getKeysOrThrow(req),
+      req.user.id,
+      await getEmbeddingConfigOrThrow(req),
     );
     return res.status(200).json(result);
   } catch (error) {
@@ -134,6 +153,8 @@ const submitAnswer = async (req, res) => {
       session_id,
       answer,
       await getKeysOrThrow(req),
+      req.user.id,
+      await getEmbeddingConfigOrThrow(req),
     );
     return res.status(200).json(result);
   } catch (error) {
@@ -161,6 +182,8 @@ const endInterview = async (req, res) => {
     const result = await repositoryService.endInterview(
       session_id,
       await getKeysOrThrow(req),
+      req.user.id,
+      await getEmbeddingConfigOrThrow(req),
     );
     return res.status(200).json(result);
   } catch (error) {
@@ -188,6 +211,8 @@ const getSession = async (req, res) => {
     const result = await repositoryService.getSession(
       session_id,
       await getKeysOrThrow(req),
+      req.user.id,
+      await getEmbeddingConfigOrThrow(req),
     );
     return res.status(200).json(result);
   } catch (error) {

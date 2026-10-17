@@ -13,9 +13,14 @@ class EmbeddingService:
     Service responsible for generating vector embeddings from semantic code chunks.
     """
 
-    def __init__(self, api_key: str | None = None):
-        self.provider = "gemini" if api_key else settings.DEFAULT_PROVIDER
-        self.model = settings.EMBEDDING_MODEL
+    def __init__(
+        self,
+        api_key: str | None = None,
+        provider: str | None = None,
+        model: str | None = None,
+    ):
+        self.provider = provider or ("gemini" if api_key else settings.DEFAULT_PROVIDER)
+        self.model = model or settings.EMBEDDING_MODEL
         self.batch_size = settings.EMBEDDING_BATCH_SIZE
         self.api_key = api_key
         self._client = None

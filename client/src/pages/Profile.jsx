@@ -25,11 +25,27 @@ export default function Profile() {
   const [formData, setFormData] = useState({ name: "" });
   const [apiKeys, setApiKeys] = useState({ gemini: false, openai: false });
   const [apiKeyInputs, setApiKeyInputs] = useState({ gemini: "", openai: "" });
-  const [visibleKeys, setVisibleKeys] = useState({ gemini: false, openai: false });
+  const [showApiKeyInputs, setShowApiKeyInputs] = useState({
+    gemini: false,
+    openai: false,
+  });
+  const [editingKeys, setEditingKeys] = useState({ gemini: false, openai: false });
   const [apiKeyLoading, setApiKeyLoading] = useState(true);
   const [apiKeySaving, setApiKeySaving] = useState("");
   const [apiKeyMessage, setApiKeyMessage] = useState("");
   const [apiKeyError, setApiKeyError] = useState("");
+  const [embeddingConfig, setEmbeddingConfig] = useState({
+    provider: "gemini",
+    model: "gemini-embedding-001",
+    keyConfigured: false,
+  });
+  const [embeddingKey, setEmbeddingKey] = useState("");
+  const [embeddingEditing, setEmbeddingEditing] = useState(false);
+  const [embeddingLoading, setEmbeddingLoading] = useState(true);
+  const [embeddingSaving, setEmbeddingSaving] = useState(false);
+  const [embeddingTesting, setEmbeddingTesting] = useState(false);
+  const [embeddingMessage, setEmbeddingMessage] = useState("");
+  const [embeddingError, setEmbeddingError] = useState("");
 
   // 🔹 Interview experience states
   const [myExperiences, setMyExperiences] = useState([]);
@@ -45,6 +61,21 @@ export default function Profile() {
       setFormData({ name: user.name });
       if (user.avatar) setAvatarPreview(user.avatar);
     }
+  }, [user]);
+
+  useEffect(() => {
+    const fetchEmbeddingConfig = async () => {
+      try {
+        const { data } = await api.get("/api/user/profile/embedding-config");
+        setEmbeddingConfig(data.config);
+      } catch {
+        setEmbeddingError("Unable to load embedding configuration.");
+      } finally {
+        setEmbeddingLoading(false);
+      }
+    };
+
+    if (user) fetchEmbeddingConfig();
   }, [user]);
 
   useEffect(() => {
@@ -79,6 +110,7 @@ export default function Profile() {
       });
       setApiKeys(data.apiKeys);
       setApiKeyInputs((current) => ({ ...current, [provider]: "" }));
+      setEditingKeys((current) => ({ ...current, [provider]: false }));
       setApiKeyMessage(
         `${provider === "gemini" ? "Gemini" : "OpenAI"} API key saved successfully.`,
       );
@@ -96,6 +128,7 @@ export default function Profile() {
     try {
       const { data } = await api.delete(`/api/user/profile/api-keys/${provider}`);
       setApiKeys(data.apiKeys);
+      setEditingKeys((current) => ({ ...current, [provider]: false }));
       setApiKeyMessage(
         `${provider === "gemini" ? "Gemini" : "OpenAI"} API key removed.`,
       );
@@ -103,6 +136,75 @@ export default function Profile() {
       setApiKeyError(error.response?.data?.message || "Unable to remove API key.");
     } finally {
       setApiKeySaving("");
+    }
+  };
+
+  const handleEmbeddingSave = async () => {
+    setEmbeddingMessage("");
+    setEmbeddingError("");
+    if (!embeddingConfig.provider || !embeddingConfig.model) {
+      setEmbeddingError("Select a supported embedding provider and model.");
+      return;
+    }
+    if (!embeddingConfig.keyConfigured && !embeddingKey.trim()) {
+      setEmbeddingError("Enter an embedding API key before saving.");
+      return;
+    }
+
+    setEmbeddingSaving(true);
+    try {
+      const { data } = await api.put("/api/user/profile/embedding-config", {
+        provider: embeddingConfig.provider,
+        model: embeddingConfig.model,
+        ...(embeddingKey.trim() ? { apiKey: embeddingKey.trim() } : {}),
+      });
+      setEmbeddingConfig(data.config);
+      setEmbeddingKey("");
+      setEmbeddingEditing(false);
+      setEmbeddingMessage("Embedding configuration saved successfully.");
+    } catch (error) {
+      setEmbeddingError(
+        error.response?.data?.message || "Unable to save embedding configuration.",
+      );
+    } finally {
+      setEmbeddingSaving(false);
+    }
+  };
+
+  const handleEmbeddingRemove = async () => {
+    setEmbeddingSaving(true);
+    setEmbeddingMessage("");
+    setEmbeddingError("");
+    try {
+      const { data } = await api.delete("/api/user/profile/embedding-config");
+      setEmbeddingConfig(data.config);
+      setEmbeddingKey("");
+      setEmbeddingEditing(false);
+      setEmbeddingMessage("Embedding configuration removed.");
+    } catch (error) {
+      setEmbeddingError(
+        error.response?.data?.message || "Unable to remove embedding configuration.",
+      );
+    } finally {
+      setEmbeddingSaving(false);
+    }
+  };
+
+  const handleEmbeddingTest = async () => {
+    setEmbeddingTesting(true);
+    setEmbeddingMessage("");
+    setEmbeddingError("");
+    try {
+      const { data } = await api.post("/api/user/profile/embedding-config/test");
+      setEmbeddingMessage(
+        `${data.message} Vector dimension: ${data.dimension}.`,
+      );
+    } catch (error) {
+      setEmbeddingError(
+        error.response?.data?.message || "Embedding configuration test failed.",
+      );
+    } finally {
+      setEmbeddingTesting(false);
     }
   };
 
@@ -298,49 +400,207 @@ export default function Profile() {
                       )}
                     </div>
                     <div className="flex flex-col sm:flex-row gap-2">
-                      <div className="flex-1 flex">
-                        <input
-                          type={visibleKeys[provider] ? "text" : "password"}
-                          value={apiKeyInputs[provider]}
-                          onChange={(e) =>
-                            setApiKeyInputs((current) => ({
-                              ...current,
-                              [provider]: e.target.value,
-                            }))
-                          }
-                          placeholder={configured ? "Enter a new key to replace it" : "Paste your API key"}
-                          autoComplete="off"
-                          className="w-full border px-3 py-2 rounded-l text-sm"
-                        />
+                      {configured && !editingKeys[provider] ? (
+                        <div className="flex-1 flex items-center border rounded text-sm px-3 py-2 min-w-0">
+                          <span className="truncate flex-1 font-mono">
+                            {"********"}
+                          </span>
+                        </div>
+                      ) : (
+                        <div className="flex-1 flex">
+                          <input
+                            type={showApiKeyInputs[provider] ? "text" : "password"}
+                            value={apiKeyInputs[provider]}
+                            onChange={(e) =>
+                              setApiKeyInputs((current) => ({
+                                ...current,
+                                [provider]: e.target.value,
+                              }))
+                            }
+                            placeholder={
+                              configured
+                                ? "Enter a new key to replace it"
+                                : "Paste your API key"
+                            }
+                            autoComplete="off"
+                            className="w-full border px-3 py-2 rounded text-sm"
+                          />
+                          <button
+                            type="button"
+                            onClick={() =>
+                              setShowApiKeyInputs((current) => ({
+                                ...current,
+                                [provider]: !current[provider],
+                              }))
+                            }
+                            className="ml-2 border px-3 py-2 rounded text-sm whitespace-nowrap"
+                            aria-label={
+                              showApiKeyInputs[provider]
+                                ? `Hide ${label} API key`
+                                : `Show ${label} API key`
+                            }>
+                            {showApiKeyInputs[provider] ? "Hide" : "Show"}
+                          </button>
+                        </div>
+                      )}
+                      {configured && !editingKeys[provider] && (
                         <button
                           type="button"
                           onClick={() =>
-                            setVisibleKeys((current) => ({
+                            setEditingKeys((current) => ({
                               ...current,
-                              [provider]: !current[provider],
+                              [provider]: true,
                             }))
                           }
-                          className="border border-l-0 px-3 rounded-r text-sm">
-                          {visibleKeys[provider] ? "Hide" : "Show"}
+                          className="border px-4 py-2 rounded text-sm">
+                          Replace
                         </button>
-                      </div>
-                      <button
-                        type="button"
-                        onClick={() => handleApiKeySave(provider)}
-                        disabled={apiKeySaving === provider}
-                        className="bg-black text-white px-4 py-2 rounded text-sm disabled:opacity-50">
-                        {apiKeySaving === provider
-                          ? "Saving..."
-                          : configured
-                            ? "Update"
-                            : "Save"}
-                      </button>
+                      )}
+                      {(!configured || editingKeys[provider]) && (
+                        <button
+                          type="button"
+                          onClick={() => handleApiKeySave(provider)}
+                          disabled={apiKeySaving === provider}
+                          className="bg-black text-white px-4 py-2 rounded text-sm disabled:opacity-50">
+                          {apiKeySaving === provider
+                            ? "Saving..."
+                            : configured
+                              ? "Update"
+                              : "Save"}
+                        </button>
+                      )}
                     </div>
                   </div>
                 );
               })}
               {apiKeyMessage && <p className="text-sm text-green-600">{apiKeyMessage}</p>}
               {apiKeyError && <p className="text-sm text-red-600">{apiKeyError}</p>}
+            </div>
+          )}
+        </div>
+
+        {/* ================= EMBEDDING MODEL CONFIGURATION ================= */}
+        <div className="bg-white p-4 sm:p-6 rounded-lg shadow">
+          <h3 className="font-semibold mb-1">Embedding Model Configuration</h3>
+          <p className="text-sm text-gray-600 mb-4">
+            This configuration is separate from your Gemini/OpenAI LLM keys and
+            is used only for repository indexing and search.
+          </p>
+
+          {embeddingLoading ? (
+            <p className="text-sm text-gray-500">
+              Loading embedding configuration...
+            </p>
+          ) : (
+            <div className="space-y-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <label className="text-sm">
+                  <span className="block font-medium mb-1">Provider</span>
+                  <select
+                    value={embeddingConfig.provider || "gemini"}
+                    onChange={(e) =>
+                      setEmbeddingConfig((current) => ({
+                        ...current,
+                        provider: e.target.value,
+                      }))
+                    }
+                    className="w-full border px-3 py-2 rounded">
+                    <option value="gemini">Google Gemini</option>
+                  </select>
+                </label>
+                <label className="text-sm">
+                  <span className="block font-medium mb-1">Embedding model</span>
+                  <select
+                    value={embeddingConfig.model || "gemini-embedding-001"}
+                    onChange={(e) =>
+                      setEmbeddingConfig((current) => ({
+                        ...current,
+                        model: e.target.value,
+                      }))
+                    }
+                    className="w-full border px-3 py-2 rounded">
+                    <option value="gemini-embedding-001">
+                      gemini-embedding-001
+                    </option>
+                    <option value="text-embedding-004">
+                      text-embedding-004
+                    </option>
+                  </select>
+                </label>
+              </div>
+
+              <div className="border rounded p-4">
+                <p className="text-sm font-medium mb-1">
+                  {embeddingConfig.keyConfigured
+                    ? "Embedding API key configured"
+                    : "Embedding API key required"}
+                </p>
+                <p className="text-xs text-gray-500 mb-3">
+                  Saved keys are encrypted and masked. Enter a new key only to
+                  replace the existing one.
+                </p>
+                <div className="flex flex-col sm:flex-row gap-2">
+                  {embeddingConfig.keyConfigured && !embeddingEditing ? (
+                    <div className="flex-1 border rounded text-sm px-3 py-2 font-mono">
+                      ********
+                    </div>
+                  ) : (
+                    <input
+                      type="password"
+                      value={embeddingKey}
+                      onChange={(e) => setEmbeddingKey(e.target.value)}
+                      placeholder={
+                        embeddingConfig.keyConfigured
+                          ? "Enter a new Gemini embedding key"
+                          : "Paste your Gemini embedding key"
+                      }
+                      autoComplete="off"
+                      className="flex-1 border px-3 py-2 rounded text-sm"
+                    />
+                  )}
+                  {embeddingConfig.keyConfigured && !embeddingEditing ? (
+                    <button
+                      type="button"
+                      onClick={() => setEmbeddingEditing(true)}
+                      className="border px-4 py-2 rounded text-sm">
+                      Replace
+                    </button>
+                  ) : (
+                    <button
+                      type="button"
+                      onClick={handleEmbeddingSave}
+                      disabled={embeddingSaving}
+                      className="bg-black text-white px-4 py-2 rounded text-sm disabled:opacity-50">
+                      {embeddingSaving ? "Saving..." : "Save"}
+                    </button>
+                  )}
+                  {embeddingConfig.keyConfigured && (
+                    <button
+                      type="button"
+                      onClick={handleEmbeddingRemove}
+                      disabled={embeddingSaving}
+                      className="border border-red-500 text-red-600 px-4 py-2 rounded text-sm disabled:opacity-50">
+                      Remove
+                    </button>
+                  )}
+                </div>
+              </div>
+
+              <div className="flex flex-wrap gap-2">
+                <button
+                  type="button"
+                  onClick={handleEmbeddingTest}
+                  disabled={embeddingTesting || !embeddingConfig.keyConfigured}
+                  className="border px-4 py-2 rounded text-sm disabled:opacity-50">
+                  {embeddingTesting ? "Testing..." : "Test Configuration"}
+                </button>
+              </div>
+              {embeddingMessage && (
+                <p className="text-sm text-green-600">{embeddingMessage}</p>
+              )}
+              {embeddingError && (
+                <p className="text-sm text-red-600">{embeddingError}</p>
+              )}
             </div>
           )}
         </div>

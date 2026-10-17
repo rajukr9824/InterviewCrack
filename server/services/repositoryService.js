@@ -10,10 +10,19 @@ const aiClient = axios.create({
   },
 });
 
-const getHeaders = (apiKeys = {}) => ({
+const getHeaders = (apiKeys = {}, userId, embeddingConfig = {}) => ({
   "x-ai-service-secret": process.env.AI_SERVICE_INTERNAL_SECRET,
+  ...(userId ? { "x-user-id": userId } : {}),
   ...(apiKeys.gemini ? { "x-user-gemini-key": apiKeys.gemini } : {}),
-  ...(apiKeys.openai ? { "x-user-openai-key": apiKeys.openai } : {}),
+  ...(embeddingConfig.apiKey
+    ? { "x-user-embedding-key": embeddingConfig.apiKey }
+    : {}),
+  ...(embeddingConfig.provider
+    ? { "x-embedding-provider": embeddingConfig.provider }
+    : {}),
+  ...(embeddingConfig.model
+    ? { "x-embedding-model": embeddingConfig.model }
+    : {}),
 });
 
 /**
@@ -49,11 +58,11 @@ const handleAxiosError = (error) => {
 /**
  * 1. Index GitHub Repository
  */
-const indexRepository = async (repositoryUrl, apiKeys) => {
+const indexRepository = async (repositoryUrl, apiKeys, userId, embeddingConfig) => {
   try {
     const response = await aiClient.post("/repository/index", {
       repository_url: repositoryUrl,
-    }, { headers: getHeaders(apiKeys) });
+    }, { headers: getHeaders(apiKeys, userId, embeddingConfig) });
     return response.data;
   } catch (error) {
     handleAxiosError(error);
@@ -63,13 +72,20 @@ const indexRepository = async (repositoryUrl, apiKeys) => {
 /**
  * 2. Search Repository Chunks
  */
-const searchRepository = async (repositoryName, query, topK = 5, apiKeys) => {
+const searchRepository = async (
+  repositoryName,
+  query,
+  topK = 5,
+  apiKeys,
+  userId,
+  embeddingConfig,
+) => {
   try {
     const response = await aiClient.post("/repository/search", {
       repository_name: repositoryName,
       query,
       top_k: topK,
-    }, { headers: getHeaders(apiKeys) });
+    }, { headers: getHeaders(apiKeys, userId, embeddingConfig) });
     return response.data;
   } catch (error) {
     handleAxiosError(error);
@@ -79,7 +95,14 @@ const searchRepository = async (repositoryName, query, topK = 5, apiKeys) => {
 /**
  * 3. Chat with Repository (RAG)
  */
-const chatRepository = async (repositoryName, question, topK, apiKeys) => {
+const chatRepository = async (
+  repositoryName,
+  question,
+  topK,
+  apiKeys,
+  userId,
+  embeddingConfig,
+) => {
   try {
     const payload = {
       repository_name: repositoryName,
@@ -89,7 +112,7 @@ const chatRepository = async (repositoryName, question, topK, apiKeys) => {
       payload.top_k = topK;
     }
     const response = await aiClient.post("/chat/repository", payload, {
-      headers: getHeaders(apiKeys),
+      headers: getHeaders(apiKeys, userId, embeddingConfig),
     });
     return response.data;
   } catch (error) {
@@ -100,12 +123,18 @@ const chatRepository = async (repositoryName, question, topK, apiKeys) => {
 /**
  * 4. Start Repository Interview
  */
-const startInterview = async (repositoryName, difficulty = "medium", apiKeys) => {
+const startInterview = async (
+  repositoryName,
+  difficulty = "medium",
+  apiKeys,
+  userId,
+  embeddingConfig,
+) => {
   try {
     const response = await aiClient.post("/interview/start", {
       repository_name: repositoryName,
       difficulty,
-    }, { headers: getHeaders(apiKeys) });
+    }, { headers: getHeaders(apiKeys, userId, embeddingConfig) });
     return response.data;
   } catch (error) {
     handleAxiosError(error);
@@ -115,12 +144,12 @@ const startInterview = async (repositoryName, difficulty = "medium", apiKeys) =>
 /**
  * 5. Submit Interview Answer
  */
-const submitAnswer = async (sessionId, answer, apiKeys) => {
+const submitAnswer = async (sessionId, answer, apiKeys, userId, embeddingConfig) => {
   try {
     const response = await aiClient.post("/interview/answer", {
       session_id: sessionId,
       answer,
-    }, { headers: getHeaders(apiKeys) });
+    }, { headers: getHeaders(apiKeys, userId, embeddingConfig) });
     return response.data;
   } catch (error) {
     handleAxiosError(error);
@@ -130,11 +159,11 @@ const submitAnswer = async (sessionId, answer, apiKeys) => {
 /**
  * 6. End Interview
  */
-const endInterview = async (sessionId, apiKeys) => {
+const endInterview = async (sessionId, apiKeys, userId, embeddingConfig) => {
   try {
     const response = await aiClient.post("/interview/end", {
       session_id: sessionId,
-    }, { headers: getHeaders(apiKeys) });
+    }, { headers: getHeaders(apiKeys, userId, embeddingConfig) });
     return response.data;
   } catch (error) {
     handleAxiosError(error);
@@ -144,11 +173,24 @@ const endInterview = async (sessionId, apiKeys) => {
 /**
  * 7. Get Interview Session State
  */
-const getSession = async (sessionId, apiKeys) => {
+const getSession = async (sessionId, apiKeys, userId, embeddingConfig) => {
   try {
     const response = await aiClient.get(`/interview/session/${sessionId}`, {
-      headers: getHeaders(apiKeys),
+      headers: getHeaders(apiKeys, userId, embeddingConfig),
     });
+    return response.data;
+  } catch (error) {
+    handleAxiosError(error);
+  }
+};
+
+const testEmbeddingConfig = async (embeddingConfig, userId) => {
+  try {
+    const response = await aiClient.post(
+      "/embedding/test",
+      {},
+      { headers: getHeaders({}, userId, embeddingConfig) },
+    );
     return response.data;
   } catch (error) {
     handleAxiosError(error);
@@ -163,4 +205,5 @@ module.exports = {
   submitAnswer,
   endInterview,
   getSession,
+  testEmbeddingConfig,
 };
