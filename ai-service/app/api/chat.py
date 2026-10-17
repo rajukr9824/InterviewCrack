@@ -7,6 +7,7 @@ from app.services.features.repository_chat_service import (
     RepositoryChatError,
     RepositoryChatService,
 )
+from app.core.internal_auth import require_gemini_key, require_internal_request
 
 logger = logging.getLogger(__name__)
 
@@ -16,14 +17,18 @@ router = APIRouter(
 )
 
 
-def get_repository_chat_service():
+def get_repository_chat_service(
+    x_user_gemini_key: str = Depends(require_gemini_key),
+):
     """Lazy dependency to create service only when needed."""
-    return RepositoryChatService()
+    return RepositoryChatService(gemini_api_key=x_user_gemini_key)
 
 
 @router.post("/repository", response_model=ChatResponse)
 def chat_with_repository(
-    request: ChatRequest, service = Depends(get_repository_chat_service)
+    request: ChatRequest,
+    service = Depends(get_repository_chat_service),
+    _authorized: None = Depends(require_internal_request),
 ):
     try:
         result = service.chat(

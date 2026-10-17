@@ -10,9 +10,10 @@ class LLMService:
     Shared service for text generation from the configured LLM provider.
     """
 
-    def __init__(self):
-        self.provider = settings.DEFAULT_PROVIDER
+    def __init__(self, api_key: str | None = None):
+        self.provider = "gemini" if api_key else settings.DEFAULT_PROVIDER
         self.model = settings.CHAT_MODEL
+        self.api_key = api_key
         self._client = None
 
     @property
@@ -22,10 +23,10 @@ class LLMService:
             from google import genai
 
             if self.provider == "gemini":
-                if settings.GEMINI_API_KEY:
-                    self._client = genai.Client(api_key=settings.GEMINI_API_KEY)
+                if self.api_key:
+                    self._client = genai.Client(api_key=self.api_key)
                 else:
-                    logger.warning("GEMINI_API_KEY is not configured for chat generation.")
+                    logger.warning("A user Gemini API key is required for chat generation.")
             else:
                 self._client = None
         return self._client
@@ -58,7 +59,7 @@ class LLMService:
                 },
             )
         except Exception as e:
-            logger.error(f"LLM generation failed: {e}")
+            logger.error("LLM generation failed")
             raise RuntimeError("Failed to generate response from LLM.") from e
 
         text = getattr(response, "text", None)

@@ -13,10 +13,11 @@ class EmbeddingService:
     Service responsible for generating vector embeddings from semantic code chunks.
     """
 
-    def __init__(self):
-        self.provider = settings.DEFAULT_PROVIDER
+    def __init__(self, api_key: str | None = None):
+        self.provider = "gemini" if api_key else settings.DEFAULT_PROVIDER
         self.model = settings.EMBEDDING_MODEL
         self.batch_size = settings.EMBEDDING_BATCH_SIZE
+        self.api_key = api_key
         self._client = None
 
     @property
@@ -27,13 +28,11 @@ class EmbeddingService:
                 from google import genai
 
                 if self.provider == "gemini":
-                    if not settings.GEMINI_API_KEY:
+                    if not self.api_key:
                         raise RuntimeError(
-                            "GEMINI_API_KEY is not set. "
-                            "Please configure it in your .env file."
+                            "A Gemini API key is required. Configure it in your profile."
                         )
-                    self._client = genai.Client(api_key=settings.GEMINI_API_KEY)
-                    logger.info("Gemini client initialized successfully.")
+                    self._client = genai.Client(api_key=self.api_key)
                 else:
                     raise RuntimeError(
                         f"Unsupported embedding provider: '{self.provider}'. "
@@ -100,10 +99,9 @@ class EmbeddingService:
 
             except Exception as e:
                 logger.error(
-                    f"Error generating embeddings for batch {i} to {i + self.batch_size}: {e}"
+                    f"Error generating embeddings for batch {i} to {i + self.batch_size}"
                 )
-                import traceback
-                logger.error(traceback.format_exc())
+                logger.error("Embedding provider traceback omitted to avoid logging credentials.")
                 # Re-raise the exception to halt the pipeline
                 raise
 

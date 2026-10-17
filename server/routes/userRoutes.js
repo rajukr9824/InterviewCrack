@@ -7,6 +7,9 @@ const {
   updateDailyCoding,
   updateInterviewSession,
   updateQuizSession,
+  getApiKeys,
+  updateApiKeys,
+  deleteApiKey,
 } = require("../controllers/userController");
 
 const router = express.Router();
@@ -15,6 +18,9 @@ const router = express.Router();
 router.get("/profile", protect, getProfile);
 router.put("/profile", protect, updateProfile);
 router.delete("/profile", protect, deleteProfile);
+router.get("/profile/api-keys", protect, getApiKeys);
+router.put("/profile/api-keys", protect, updateApiKeys);
+router.delete("/profile/api-keys/:provider", protect, deleteApiKey);
 
 // Daily Coding Streak
 router.post("/daily-coding", protect, updateDailyCoding);

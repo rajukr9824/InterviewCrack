@@ -9,8 +9,8 @@ logger = logging.getLogger(__name__)
 
 
 class RetrievalService:
-    def __init__(self):
-        self.embedding_service = EmbeddingService()
+    def __init__(self, gemini_api_key: str | None = None):
+        self.embedding_service = EmbeddingService(gemini_api_key)
         self.vector_store_service = VectorStoreService()
 
     def search(self, repository_name: str, query: str, top_k: int = 5) -> Dict:

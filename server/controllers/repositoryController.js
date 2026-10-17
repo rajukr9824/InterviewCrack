@@ -1,4 +1,7 @@
 const repositoryService = require("../services/repositoryService");
+const { getUserApiKeys } = require("../services/apiKeyService");
+
+const getKeysOrThrow = (req) => getUserApiKeys(req.user.id);
 
 /**
  * 1. POST /api/repository/index
@@ -14,7 +17,10 @@ const indexRepository = async (req, res) => {
       });
     }
 
-    const result = await repositoryService.indexRepository(repository_url);
+    const result = await repositoryService.indexRepository(
+      repository_url,
+      await getKeysOrThrow(req),
+    );
     return res.status(200).json(result);
   } catch (error) {
     console.error("Error indexing repository:", error);
@@ -41,7 +47,8 @@ const searchRepository = async (req, res) => {
     const result = await repositoryService.searchRepository(
       repository_name,
       query,
-      top_k
+      top_k,
+      await getKeysOrThrow(req),
     );
     return res.status(200).json(result);
   } catch (error) {
@@ -69,7 +76,8 @@ const chatRepository = async (req, res) => {
     const result = await repositoryService.chatRepository(
       repository_name,
       question,
-      top_k
+      top_k,
+      await getKeysOrThrow(req),
     );
     return res.status(200).json(result);
   } catch (error) {
@@ -96,7 +104,8 @@ const startInterview = async (req, res) => {
 
     const result = await repositoryService.startInterview(
       repository_name,
-      difficulty
+      difficulty,
+      await getKeysOrThrow(req),
     );
     return res.status(200).json(result);
   } catch (error) {
@@ -121,7 +130,11 @@ const submitAnswer = async (req, res) => {
       });
     }
 
-    const result = await repositoryService.submitAnswer(session_id, answer);
+    const result = await repositoryService.submitAnswer(
+      session_id,
+      answer,
+      await getKeysOrThrow(req),
+    );
     return res.status(200).json(result);
   } catch (error) {
     console.error("Error submitting answer:", error);
@@ -145,7 +158,10 @@ const endInterview = async (req, res) => {
       });
     }
 
-    const result = await repositoryService.endInterview(session_id);
+    const result = await repositoryService.endInterview(
+      session_id,
+      await getKeysOrThrow(req),
+    );
     return res.status(200).json(result);
   } catch (error) {
     console.error("Error ending interview:", error);
@@ -169,7 +185,10 @@ const getSession = async (req, res) => {
       });
     }
 
-    const result = await repositoryService.getSession(session_id);
+    const result = await repositoryService.getSession(
+      session_id,
+      await getKeysOrThrow(req),
+    );
     return res.status(200).json(result);
   } catch (error) {
     console.error("Error retrieving session:", error);

@@ -14,6 +14,7 @@ from app.services.features.project_interview_service import (
     ProjectInterviewError,
     ProjectInterviewService,
 )
+from app.core.internal_auth import require_gemini_key, require_internal_request
 
 logger = logging.getLogger(__name__)
 
@@ -23,14 +24,18 @@ router = APIRouter(
 )
 
 
-def get_project_interview_service():
+def get_project_interview_service(
+    x_user_gemini_key: str = Depends(require_gemini_key),
+):
     """Lazy dependency to create service only when needed."""
-    return ProjectInterviewService()
+    return ProjectInterviewService(gemini_api_key=x_user_gemini_key)
 
 
 @router.post("/start", response_model=StartInterviewResponse)
 def start_interview(
-    request: StartInterviewRequest, service = Depends(get_project_interview_service)
+    request: StartInterviewRequest,
+    service = Depends(get_project_interview_service),
+    _authorized: None = Depends(require_internal_request),
 ):
     """
     Start a new interview session based on an indexed repository.
@@ -59,7 +64,9 @@ def start_interview(
 
 @router.post("/answer", response_model=AnswerResponse)
 def submit_answer(
-    request: AnswerRequest, service = Depends(get_project_interview_service)
+    request: AnswerRequest,
+    service = Depends(get_project_interview_service),
+    _authorized: None = Depends(require_internal_request),
 ):
     """
     Submit an answer to the current interview question.
@@ -88,7 +95,9 @@ def submit_answer(
 
 @router.post("/end", response_model=EndInterviewResponse)
 def end_interview(
-    request: EndInterviewRequest, service = Depends(get_project_interview_service)
+    request: EndInterviewRequest,
+    service = Depends(get_project_interview_service),
+    _authorized: None = Depends(require_internal_request),
 ):
     """
     End the interview session and receive final summary and feedback.
@@ -117,7 +126,11 @@ def end_interview(
 
 
 @router.get("/session/{session_id}")
-def get_session(session_id: str, service = Depends(get_project_interview_service)):
+def get_session(
+    session_id: str,
+    service = Depends(get_project_interview_service),
+    _authorized: None = Depends(require_internal_request),
+):
     """
     Get the current state of an interview session.
     """

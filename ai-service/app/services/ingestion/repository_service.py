@@ -17,10 +17,10 @@ logger.info(f"Repository service module loaded, Python path: {sys.executable}")
 
 
 class RepositoryService:
-    def __init__(self):
+    def __init__(self, gemini_api_key: str | None = None):
         self.parser_service = ParserService()
         self.chunk_service = ChunkService()
-        self.embedding_service = EmbeddingService()
+        self.embedding_service = EmbeddingService(gemini_api_key)
         self.vector_store_service = VectorStoreService()
 
     def clone_repository(self, repository_url: str) -> str:
@@ -187,5 +187,4 @@ class RepositoryService:
             "total_files": len(source_files),
             "message": "Repository indexed successfully.",
         }
-
 
